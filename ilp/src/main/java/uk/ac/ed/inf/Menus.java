@@ -32,7 +32,7 @@ public class Menus {
     public Menus(String serverName, String serverPort) {
         this.serverName = serverName;
         this.serverPort = serverPort;
-        this.shops = new ArrayList<>(getShopDetails()); //get all shops once
+        this.shops = new ArrayList<>(getShopDetails()); //get all shops once.
     }
 
     /**
