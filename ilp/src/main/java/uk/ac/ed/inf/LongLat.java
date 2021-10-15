@@ -1,7 +1,9 @@
 package uk.ac.ed.inf;
 
+/**
+ * Class for methods on movement, such as operating on coordinates.
+ */
 public class LongLat {
-
 
     //four corners of the confinement area as constants
     private static final double CONFINEMENT_LATITUDE_NORTH = 55.946233;
@@ -21,12 +23,12 @@ public class LongLat {
 
 
     /** Stores the longitude of current location */
-    public double longitude;
+    public final double longitude;
     /** Stores the latitude of current location */
-    public double latitude;
+    public final double latitude;
 
     /**
-     * Create a LongLat object by passing two values for longitude and latitude respectively.
+     * Create a LongLat object by passing values for longitude and latitude respectively.
      * @param longitude a double for longitude
      * @param latitude a double for latitude
      */
@@ -51,10 +53,6 @@ public class LongLat {
      * @return the magnitude of the distance in degrees.
      */
     public double distanceTo(LongLat destination) {
-        if (destination == null) {
-            throw new NullPointerException("Destination cannot be null");
-        }
-
         return (Math.sqrt(Math.pow(this.longitude - destination.longitude, 2) +
                 Math.pow(this.latitude - destination.latitude, 2)));
     }
@@ -66,10 +64,6 @@ public class LongLat {
      * @return true if the location is regarded as 'close' to self.
      */
     public boolean closeTo(LongLat destination) {
-        if (destination == null) {
-            throw new NullPointerException("Destination cannot be null");
-        }
-
         return this.distanceTo(destination) < CLOSE_TO_DISTANCE;
     }
 
@@ -78,6 +72,7 @@ public class LongLat {
      * The amount moved in the direction is set by a class constant in degrees.
      * @param angle if the angle is from 0 to 350 and a multiple of 10 then the drone moves, for -999 it hovers.
      * @return the new location of drone, even if it is hovering.
+     * @throws IllegalArgumentException if angle is not within the allowed bounds.
      */
     public LongLat nextPosition(int angle) {
         if (angle >= MIN_ANGLE && angle <= MAX_ANGLE && angle % ANGLE_INTERVAL == 0) {

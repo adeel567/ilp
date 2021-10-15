@@ -2,56 +2,46 @@ package uk.ac.ed.inf;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
-import java.io.IOException;
 import java.lang.reflect.Type;
-import java.net.URI;
-import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
-
+/**
+ * Class for acting on the various menus.
+ */
 public class Menus {
 
-    //constant for the  delivery charge
+    //constant for the delivery charge
     private static final int STANDARD_DELIVERY_CHARGE = 50;
 
-    //constants for using server and to ensure there is only one HttpClient
+    //constant for the path on the server where the menu is located
     private static final String SERVER_PATH_TO_MENU = "menus/menus.json";
-    private static final int TIMEOUT_DURATION_IN_SECS = 10;
-    private static final int HTTP_SUCCESS = 200;
-    private static final HttpClient client = HttpClient.newHttpClient();
 
     private final String serverName;
     private final String serverPort;
 
+    //shops obtained from server
+    private final ArrayList<Shop> shops;
+
+    /**
+     * Creates a Menu object by passing in the details for the server.
+     * Once created it fetches the menus for all shops.
+     * @param serverName hostname of the server to connect to.
+     * @param serverPort port on the server to connect to.
+     */
     public Menus(String serverName, String serverPort) {
         this.serverName = serverName;
         this.serverPort = serverPort;
+        this.shops = new ArrayList<>(getShopDetails()); //get all shops once
     }
 
     /**
      * Calculates the total cost including the delivery cost of ordering various items.
-     * @param items takes multiple strings of item names to calculate cost of ordering.
+     * @param items takes multiple strings of item names to calculate cost of ordering them.
      * @return the total cost of delivery in pence.
      */
     public int getDeliveryCost(String... items){
-        String MenuURL = String.format("http://%s:%s/%s",this.serverName,this.serverPort, SERVER_PATH_TO_MENU);
-        String response = getJSON(MenuURL);
-
-        List<RestaurantDetails> restaurants = parseRestaurantDetails(response);
-
-        HashMap<String,Integer> itemPrices = new HashMap<>(); //allows for O(1) lookups
-
-        for (RestaurantDetails restaurant: restaurants) {
-            for (RestaurantDetails.Menu menu: restaurant.menu) {
-                itemPrices.put(menu.item,menu.pence); //store all values once
-            }
-        }
+        HashMap<String, Integer> itemPrices = getItemPrices();
 
         int totalPrice = STANDARD_DELIVERY_CHARGE; //all orders must start from base price of delivery
         for (String itemName : items) {
@@ -60,30 +50,32 @@ public class Menus {
         return totalPrice;
     }
 
-    private String getJSON(String urlString) {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(urlString))
-                .timeout(Duration.of(TIMEOUT_DURATION_IN_SECS,SECONDS)) //timeout in case server overloaded
-                .build();
+    /**
+     * Obtain the pairs of items and prices from all shops.
+     * @return a HashMap of item and price pairs.
+     */
+    private HashMap<String, Integer> getItemPrices() {
+        HashMap<String,Integer> itemPrices = new HashMap<>(); //allows for O(1) lookups
 
-        HttpResponse<String> response;
-        try {
-            response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() != HTTP_SUCCESS) {
-                throw new RuntimeException(String.format("JSON retrieval failed with status code: %s",
-                        response.statusCode()));
+        for (Shop shop : this.shops) {
+            for (Shop.Menu menu: shop.menu) {
+                itemPrices.put(menu.item,menu.pence); //store all values once
             }
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(String.format("Unable to connect to server %s on port %s",
-                    this.serverName, this.serverPort));
         }
-        return response.body();
+        return itemPrices;
     }
 
-    private List<RestaurantDetails> parseRestaurantDetails(String toParse) {
-        List<RestaurantDetails> parsedRestaurants;
-        Type listType = new TypeToken<List<RestaurantDetails>>() {}.getType(); //GSON needs type of the list of objects
-        parsedRestaurants = new Gson().fromJson(toParse, listType);
-        return parsedRestaurants;
+    /**
+     * Obtains and parses all of the shops and their details from the server.
+     * @return a collection of parsed Shop objects as ArrayList.
+     */
+    private ArrayList<Shop> getShopDetails() {
+        String MenuURL = String.format("http://%s:%s/%s",this.serverName,this.serverPort, SERVER_PATH_TO_MENU);
+        String response = ServerIO.getRequest(MenuURL); //get an unparsed response from server
+
+        ArrayList<Shop> parsedShops;
+        Type listType = new TypeToken<ArrayList<Shop>>() {}.getType(); //GSON needs to be told type
+        parsedShops = new Gson().fromJson(response, listType);
+        return parsedShops;
     }
 }

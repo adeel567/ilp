@@ -1,6 +1,10 @@
 package uk.ac.ed.inf;
 
-public class RestaurantDetails {
+/**
+ * Class for structuring the details of a shop.
+ * Required for parsing JSON.
+ */
+public class Shop {
     String name;
     String location;
 
