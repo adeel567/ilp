@@ -190,5 +190,97 @@ public class AppTest {
         assertEquals(4 * 460 + 50, totalCost);
     }
 
+//    @Test
+//    public void testicle() {
+//        LongLat ll = new LongLat(-3.1902,55.9450);
+//        System.out.println(new Mapping("localhost","9898").isInNoFly(ll));
+//    }
 
+//
+//    @Test
+//    public void testIntersection() {
+//        var a = Point
+//        System.out.println(new Mapping("localhost","9898").isInNoFly(ll));
+//    }
+
+    @Test
+    public void testRoute1() {
+        LongLat start = new LongLat(-3.1880, 55.9461);
+        LongLat end = new LongLat(-3.1890, 55.9427);
+        Mapping test = new Mapping("localhost","9898");
+        var x = test.getRoute(start, end);
+        System.out.println(test.getNumberOfMovesOfRoute(x));
+        var y = test.getRouteAsFC(test.movesToPath(x));
+    }
+
+    @Test
+    public void testRoute2() {
+        aStarNode end = new aStarNode(-3.191065, 55.945626);
+        aStarNode start = new aStarNode(-3.186103, 55.944656);
+        Mapping test = new Mapping("localhost","9898");
+        var x = test.getRoute(start, end);
+        System.out.println(test.getNumberOfMovesOfRoute(x));
+        var y = test.getRouteAsFC(test.movesToPath(x));
+    }
+
+    @Test
+    public void testRoute3() {
+        aStarNode start = new aStarNode(-3.191065, 55.945626);
+        aStarNode end = new aStarNode(-3.187837, 55.943497);
+        Mapping test = new Mapping("localhost","9898");
+        var x = test.getRoute(start, end);
+        System.out.println(test.getNumberOfMovesOfRoute(x));
+        var y = test.getRouteAsFC(test.movesToPath(x));
+    }
+
+    @Test
+    public void testRoute4() {
+        aStarNode start = new aStarNode(-3.191065, 55.945626);
+        aStarNode end = new aStarNode(-3.191065, 55.945726);
+        Mapping test = new Mapping("localhost","9898");
+        var x = test.getRoute(start, end);
+        System.out.println(test.getNumberOfMovesOfRoute(x));
+        var y = test.getRouteAsFC(test.movesToPath(x));
+    }
+
+
+//    @Test
+//    public void testOrder() {
+//        var x = new Order("38b349ff", "spell.stick.scale");
+//    }
+
+    @Test
+    public void testFetchOrders() {
+        var x = new OrderHandler("2022-12-25");
+        x.fetchOrders();
+    }
+
+    @Test
+    public void getWhichPickups() {
+        var x = new Menus("localhost", "9898");
+        var y = x.getDeliveryStops("Flafel with avocado wrap", "Humus and aubergine wrap",
+                "Goat's cheese salad Italian roll", "Hummus, falafel and spicy tomato French country roll");
+        System.out.println(y.toString());
+    }
+
+    @Test
+    public void getWhichPickups2() {
+        var x = new Menus("localhost", "9898");
+        var y = x.getDeliveryStops("Feta cheese and sundried tomato wrap",
+                "Flafel with humus wrap", "Apple fruit tea", "Mango cap tea");
+        System.out.println(y.toString());
+        var z1 = (new What3Words(y.get(0).location));
+        System.out.println(z1.coordinates.toString());
+
+        var z2 = (new What3Words(y.get(1).location));
+        System.out.println(z2.coordinates.toString());
+    }
+
+    @Test
+    public void testTSP() {
+        var x = new OrderHandler("2022-12-25");
+        x.fetchOrders();
+        var y = new PathBuilder(x.getOrders());
+        y.buildNodes();
+    }
 }

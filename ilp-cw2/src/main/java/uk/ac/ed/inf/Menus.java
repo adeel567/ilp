@@ -5,6 +5,8 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Class for acting on the various menus.
@@ -77,5 +79,22 @@ public class Menus {
         Type listType = new TypeToken<ArrayList<Shop>>() {}.getType(); //GSON needs to be told type
         parsedShops = new Gson().fromJson(response, listType);
         return parsedShops;
+    }
+
+    public ArrayList<Shop> getDeliveryStops(String... items) {
+        HashMap<String, Shop> itemStops = new HashMap<>();
+        for (Shop shop : this.shops) {
+            for (Shop.Menu menu: shop.menu) {
+                itemStops.put(menu.item,shop); //store all values once
+            }
+        }
+
+        Set<Shop> stops = new HashSet<>();
+        for (String itemName: items) {
+            stops.add(itemStops.get(itemName));
+        }
+
+        return new ArrayList<Shop>(stops);
+
     }
 }

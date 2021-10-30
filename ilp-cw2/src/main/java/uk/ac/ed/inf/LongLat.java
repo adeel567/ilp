@@ -1,12 +1,24 @@
 package uk.ac.ed.inf;
 
+import com.google.gson.Gson;
+import com.mapbox.geojson.GeoJson;
+import com.mapbox.geojson.Point;
+import com.mapbox.geojson.PointAsCoordinatesTypeAdapter;
+
 /**
  * Class for methods on movement, such as operating on coordinates.
  */
 public class LongLat {
 
+
     //four corners of the confinement area as constants
     private static final double CONFINEMENT_LATITUDE_NORTH = 55.946233;
+
+    @Override
+    public String toString() {
+        return String.format("%s,%s",this.longitude,this.latitude);
+    }
+
     private static final double CONFINEMENT_LATITUDE_SOUTH = 55.942617;
     private static final double CONFINEMENT_LONGITUDE_WEST = -3.192473;
     private static final double CONFINEMENT_LONGITUDE_EAST = -3.184319;
@@ -85,4 +97,23 @@ public class LongLat {
         }
         throw new IllegalArgumentException("Angle given is out of bounds.");
     }
+
+    public Point toPoint() {
+        return Point.fromLngLat(this.longitude,this.latitude);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (obj.getClass() != this.getClass()) {
+            return false;
+        }
+
+        final LongLat other = (LongLat) obj;
+        return this.longitude == other.longitude && this.latitude == other.latitude;
+    }
+
 }
