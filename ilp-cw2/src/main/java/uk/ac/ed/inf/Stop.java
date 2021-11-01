@@ -6,9 +6,9 @@ import java.util.List;
 
 public class Stop {
     public LongLat coordinates;
-    public double distanceTo;
+ //   public double distanceTo;
     public String id;
-    public List<DroneMove> routeTo;
+//    public List<DroneMove> routeTo;
 
     public Stop(String id, LongLat coordinates) {
         this.id = id;

@@ -115,9 +115,9 @@ public class Mapping {
     }
 
     public ArrayList<DroneMove> getRoute(LongLat startLL, LongLat endLL) {
-       // assert !startLL.closeTo(endLL) : "start is close to end, no path";
+//        assert !startLL.closeTo(endLL) : "start is close to end, no path";
         if (startLL.closeTo(endLL)) {
-            var x = new DroneMove(startLL, endLL, -999);
+            var x = new DroneMove(startLL, startLL, -999);
             var y = new ArrayList<DroneMove>();
             y.add(x);
              return y;
@@ -153,22 +153,31 @@ public class Mapping {
 
     public ArrayList<Point> movesToPath(ArrayList<DroneMove> dms) {
         var lls = new ArrayList<Point>();
+        lls.add(dms.get(0).getFrom().toPoint());
+        lls.add(dms.get(0).getTo().toPoint());
 
-        for (DroneMove dm : dms) {
-         lls.add(dm.getFrom().toPoint());
-         lls.add(dm.getTo().toPoint());
+        if (dms.size() > 1) {
+            for (int i = 1, dmsSize = dms.size(); i < dmsSize; i++) {
+                DroneMove dm = dms.get(i);
+//                lls.add(dm.getFrom().toPoint());
+                lls.add(dm.getTo().toPoint());
+            }
         }
-        System.out.println(lls.size());
+        System.out.println("points " + lls.size());
         return lls;
     }
 
 
     public FeatureCollection getRouteAsFC(List<Point> path) {
-        var x = FeatureCollection.fromFeature(Feature.fromGeometry(
-                (Geometry) LineString.fromLngLats(path)));
+        var y = Feature.fromGeometry(
+                (Geometry) LineString.fromLngLats(path));
+      //  System.out.println(y.toJson());
+
+        var x = FeatureCollection.fromFeature(y);
         System.out.println(x.toJson());
         return x;
     }
+
 
     public int getNumberOfMovesOfRoute(List<DroneMove> points) {
         return (points.size());

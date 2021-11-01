@@ -32,6 +32,11 @@ public class DroneMove {
         this.to = to;
     }
 
+    @Override
+    public String toString() {
+        return (String.format("From: %s, to: %s, angle: %s", this.from,this.to,this.angle));
+    }
+
     public int getAngle() {
         return angle;
     }

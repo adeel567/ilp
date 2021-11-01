@@ -4,13 +4,13 @@ import java.sql.*;
 import java.util.ArrayList;
 
 public class Order {
-    public String orderNo;
-    public ArrayList<String> orderItems;
-    public int totalMovesUsed;
-    public int totalCost;
-    public ArrayList<Stop> stops;
-    public LongLat destination;
-    public String customer;
+    private String orderNo;
+    private ArrayList<String> orderItems;
+    private int deliveryCost;
+    private ArrayList<Stop> allStops;
+    private ArrayList<DroneMove> internalRoute;
+    private LongLat destination;
+    private String customer;
 
     private final String jdbcString = "jdbc:derby://localhost:1527/derbyDB";
     private final Menus myMenu = new Menus("localhost","9898");
@@ -21,11 +21,31 @@ public class Order {
         this.orderNo = orderNo;
         this.destination = new What3Words(deliverTo).getCoordinates();
         this.orderItems = fetchOrderItems();
-        this.stops = generateInternalRoute();
-        this.totalCost = myMenu.getDeliveryCost(this.orderItems.toArray(new String[orderItems.size()]));
+        this.allStops = getStops();
+        this.internalRoute = this.generateInternalRoute();
+        this.deliveryCost = myMenu.getDeliveryCost(this.orderItems.toArray(new String[orderItems.size()]));
+     //   printFlight();
     }
 
-    private ArrayList<Stop> generateInternalRoute() {
+    private ArrayList<DroneMove> generateInternalRoute() {
+
+        ArrayList<DroneMove> route = new ArrayList<>();
+
+        assert allStops.size() >=2 : "only one stop on entire journey";
+        for (int i = 0; i < allStops.size()-1; i++) {
+            var stop = allStops.get(i);
+            var stopNext = allStops.get(i+1);
+
+            route.add(new DroneMove(stop.coordinates,stop.coordinates,-999));
+            route.addAll(myMapping.getRoute(stop.coordinates,stopNext.coordinates));
+        }
+        var dest = allStops.get(allStops.size()-1);
+        route.add(new DroneMove(dest.coordinates,dest.coordinates,-999));
+
+        return route;
+    }
+
+    private ArrayList<Stop> getStops() {
         var unorderedShops = myMenu.getDeliveryStops(this.orderItems.toArray(new String[orderItems.size()]));
 
         ArrayList<Stop> allStops = new ArrayList<>();
@@ -35,71 +55,7 @@ public class Order {
             allStops.add(s);
         }
         allStops.add(new Stop(this.customer,this.destination));
-
-        ArrayList<Stop> orderedStops = new ArrayList<>();
-        if (allStops.size() > 2) {
-            var p01 = myMapping.getRoute(allStops.get(0).coordinates, allStops.get(1).coordinates);
-            var p12 = myMapping.getRoute(allStops.get(1).coordinates, allStops.get(2).coordinates);
-            var dist01 = myMapping.getNumberOfMovesOfRoute(p01);
-            var dist12 = myMapping.getNumberOfMovesOfRoute(p12);
-            var dist012 =  dist01+ + dist12;
-
-            var p10 = myMapping.getRoute(allStops.get(1).coordinates, allStops.get(0).coordinates);
-            var p02 = myMapping.getRoute(allStops.get(0).coordinates, allStops.get(2).coordinates);
-            var dist10 = myMapping.getNumberOfMovesOfRoute(p10);
-            var dist02 = myMapping.getNumberOfMovesOfRoute(p02);
-            var dist102 =  dist10+ + dist02;
-
-            if (dist012 <= dist102) {
-                allStops.get(0).distanceTo = 0;
-                orderedStops.add(allStops.get(0));
-
-                allStops.get(1).distanceTo = dist01;
-                allStops.get(1).routeTo = p01;
-                orderedStops.add(allStops.get(1));
-
-                allStops.get(2).distanceTo = dist12;
-                allStops.get(2).routeTo = p12;
-                orderedStops.add(allStops.get(2));
-                this.totalMovesUsed = dist012;
-
-            } else {
-                allStops.get(1).distanceTo = 0;
-                orderedStops.add(allStops.get(1));
-
-                allStops.get(0).distanceTo = dist10;
-                allStops.get(0).routeTo = p10;
-                orderedStops.add(allStops.get(0));
-
-                allStops.get(2).distanceTo = dist02;
-                allStops.get(2).routeTo = p12;
-                orderedStops.add(allStops.get(2));
-                this.totalMovesUsed = dist102;
-
-            }
-        } else {
-//            System.out.println(allStops.get(0).location.latitude);
-//            System.out.println(allStops.get(1).location.latitude);
-//
-//            System.out.println(allStops.get(0).location.longitude);
-//            System.out.println(allStops.get(0).location.latitude);
-//            System.out.println("ss");
-//            System.out.println(allStops.get(1).location.longitude);
-//            System.out.println(allStops.get(1).location.latitude);
-            var p01 = myMapping.getRoute(allStops.get(0).coordinates, allStops.get(1).coordinates);
-            var dist01 = myMapping.getNumberOfMovesOfRoute(p01);
-
-            allStops.get(0).distanceTo = 0;
-            orderedStops.add(allStops.get(0));
-
-            allStops.get(1).distanceTo = dist01;
-            allStops.get(1).routeTo = p01;
-            orderedStops.add(allStops.get(1));
-
-            this.totalMovesUsed = dist01;
-        }
-        return orderedStops;
-//        return allStops;
+        return allStops;
     }
 
     private ArrayList<String> fetchOrderItems(){
@@ -123,14 +79,51 @@ public class Order {
     }
 
     public LongLat getStart() {
-        return this.stops.get(0).coordinates;
+        return this.allStops.get(0).coordinates;
     }
 
     public LongLat getDestination() {
         return this.destination;
     }
 
-    public ArrayList<Stop> getAllStops() { return this.stops;}
+    public int getMovesUsed() {
+        return this.internalRoute.size();
+    }
+
+    public int getDeliveryCost() {
+        return this.deliveryCost;
+    }
+
+    public String getOrderNo() {
+        return this.orderNo;
+    }
+
+    public ArrayList<DroneMove> getFlightPath() {
+        return this.internalRoute;
+    }
+
+    public void printFlight() {
+        System.out.println("/////// order");
+        myMapping.getRouteAsFC(myMapping.movesToPath(internalRoute));
+        for (Stop allStop : this.allStops) {
+            System.out.println(allStop.id);
+        }
+
+        for (int i = 0; i < internalRoute.size(); i++) {
+            var dm = internalRoute.get(i);
+          //  var dm2 = internalRoute.get(i+1);
+            System.out.println(dm);
+
+//            if (!(dm.getTo().closeTo(dm2.getFrom()))) {
+//                System.out.println(dm.toString());
+//                System.out.println("UH OH!");
+//                System.out.println(dm2.toString());
+//                }
+        }
+//            System.out.println(droneMove.toString());
+    }
+
+   // public ArrayList<Stop> getAllStops() { return this.stops;}
 
 
 

@@ -30,14 +30,16 @@ public class OrderHandler {
             HashMap<String,Order> ordersList = new HashMap<>();
             ResultSet rs = psOrdersQuery.executeQuery();
             while(rs.next()) {
-                String orderNo = rs.getString("orderNo");
+//            while(rs.next() && ordersList.size() <2) {
+
+                    String orderNo = rs.getString("orderNo");
                 String customer = rs.getString("customer");
                 String deliverTo = rs.getString("deliverTo");
 //                System.out.println("NEXT ORDER!!!!!!!!");
 //                System.out.println(orderNo);
 //                System.out.println(deliverTo);
                 var order = new Order(orderNo,customer,deliverTo);
-                ordersList.put(order.orderNo,order);
+                ordersList.put(order.getOrderNo(),order);
             }
             this.orders = ordersList;
         } catch (SQLException throwables) {

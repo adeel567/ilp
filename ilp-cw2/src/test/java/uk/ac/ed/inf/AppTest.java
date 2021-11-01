@@ -2,6 +2,8 @@ package uk.ac.ed.inf;
 
 import org.junit.Test;
 
+import java.util.Map;
+
 import static org.junit.Assert.*;
 
 public class AppTest {
@@ -235,12 +237,34 @@ public class AppTest {
 
     @Test
     public void testRoute4() {
+        aStarNode start = new aStarNode(-3.191594,55.943658);
+        aStarNode end = new aStarNode(-3.186199,55.945734);
+        Mapping test = new Mapping("localhost","9898");
+        var x = test.getRoute(start, end);
+        System.out.println(test.getNumberOfMovesOfRoute(x));
+        var y = test.getRouteAsFC(test.movesToPath(x));
+    }
+
+    @Test
+    public void testRoute5() {
         aStarNode start = new aStarNode(-3.191065, 55.945626);
         aStarNode end = new aStarNode(-3.191065, 55.945726);
         Mapping test = new Mapping("localhost","9898");
         var x = test.getRoute(start, end);
         System.out.println(test.getNumberOfMovesOfRoute(x));
         var y = test.getRouteAsFC(test.movesToPath(x));
+    }
+
+    @Test
+    public void testRouteShortHover() {
+        LongLat start = new LongLat(-3.1890,55.9452);
+        LongLat end = new LongLat(-3.1890+0.00015*2,55.9452);
+        Mapping test = new Mapping("localhost","9898");
+        var x = test.getRoute(start, end);
+        x.add(new DroneMove(end,end, -999));
+        System.out.println(test.getNumberOfMovesOfRoute(x));
+        var y = test.getRouteAsFC(test.movesToPath(x));
+
     }
 
 
@@ -278,9 +302,10 @@ public class AppTest {
 
     @Test
     public void testTSP() {
-        var x = new OrderHandler("2022-12-25");
+        var x = new OrderHandler("2022-12-31");
         x.fetchOrders();
         var y = new PathBuilder(x.getOrders());
         y.buildNodes();
+        y.getTour();
     }
 }
