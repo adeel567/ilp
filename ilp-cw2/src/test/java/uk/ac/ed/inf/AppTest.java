@@ -275,7 +275,7 @@ public class AppTest {
 
     @Test
     public void testFetchOrders() {
-        var x = new OrderHandler("2022-12-25");
+        var x = new OrderHandler("2022-12-31");
         x.fetchOrders();
     }
 
@@ -302,7 +302,7 @@ public class AppTest {
 
     @Test
     public void testTSP() {
-        var x = new OrderHandler("2022-12-31");
+        var x = new OrderHandler("2023-12-31");
         x.fetchOrders();
         var y = new PathBuilder(x.getOrders());
         y.buildNodes();

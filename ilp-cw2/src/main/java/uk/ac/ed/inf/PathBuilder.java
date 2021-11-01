@@ -198,56 +198,58 @@ public class PathBuilder {
 
             addEnd(g);
 
-
-            var x =myMapping.getRoute(todaysOrders.get(perms.get(perms.size() - 1)).getDestination(),
-                    end.coordinates);
-            movesUsed += myMapping.getNumberOfMovesOfRoute(x);
-            flight.addAll(x);
+            var x = (g.getEdge(curr,end.id));
+            var y = x.route;
+            movesAllowed += x.moves;
             perms.add(end.id);
+
 
             if (movesUsed > movesAllowed) { //prepare for next loop
                 removed.add(worstEndVert(g));
                 g  = (SimpleDirectedWeightedGraph<String,tspEdge>) realGraph.clone();
                 g.removeAllVertices(removed);
-                System.out.println(movesUsed);
+                System.out.println("MOVES USED " + movesUsed);
             }
         }
 
-//        int i = 0;
-//        for (String s : removed) {
-//            i+= todaysOrders.get(s).getDeliveryCost();
-//        }
-//        System.out.printf("Cost lost %s%n", i);
-//
-//
-//
-//
-        System.out.println(movesUsed);
+        /////////////
+
+
+        int i = 0;
+        for (String s : removed) {
+            i+= todaysOrders.get(s).getDeliveryCost();
+        }
+        System.out.printf("Cost lost %s%n", i);
+
+
+
+
+        System.out.println("moves " + movesUsed);
         System.out.println(perms.toString());
         myMapping.getRouteAsFC(myMapping.movesToPath(flight));
 
 //        for (DroneMove droneMove : flight) {
 //            System.out.println(droneMove.toString());
 //        }
-//
-//        for (int i = 0; i < flight.size() - 1; i++) {
-//            var dm = flight.get(i);
-//            var dm2 = flight.get(i + 1);
+
+        for (i = 0; i < flight.size() - 1; i++) {
+            var dm = flight.get(i);
+            var dm2 = flight.get(i + 1);
 //            System.out.println(dm);
-//
-//            if (!(dm.getTo().closeTo(dm2.getFrom()))) {
-//                System.out.println(dm.toString());
-//                System.out.println("UH OH!");
-//                System.out.println(dm2.toString());
-//            }
-//        }
+
+            if (!(dm.getTo().closeTo(dm2.getFrom()))) {
+                System.out.println(dm.toString());
+                System.err.println("UH OH!");
+                System.out.println(dm2.toString());
+            }
+        }
     }
 
     private void addEnd(SimpleDirectedWeightedGraph<String, tspEdge> g) {
         g.addVertex(end.id);
         for (var y : g.vertexSet()) {
             if (!y.equals(end.id)) {
-                var route = myMapping.getRoute(todaysOrders.get(y).getStart(),
+                var route = myMapping.getRoute(todaysOrders.get(y).getDestination(),
                         end.coordinates);
                 var distXY = (myMapping.getNumberOfMovesOfRoute(route));
                 var weight = distXY / (double) todaysOrders.get(y).getDeliveryCost();
@@ -258,7 +260,7 @@ public class PathBuilder {
                 edge.route = route;
 
                 g.addEdge(y, end.id, edge);
-                g.setEdgeWeight(g.getEdge(y, end.id), distXY);
+                g.setEdgeWeight(g.getEdge(y, end.id), weight);
             }
         }
     }
