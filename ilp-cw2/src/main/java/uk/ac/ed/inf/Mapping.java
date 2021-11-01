@@ -82,7 +82,7 @@ public class Mapping {
             }
 
             int inc = 60;
-            for (aStarNode m : n.generateNeighbours(60)) {
+            for (aStarNode m : n.generateNeighbours(inc)) {
                 var a = n.toPoint();
                 var b = m.toPoint();
 

@@ -200,11 +200,14 @@ public class PathBuilder {
 
             var x = (g.getEdge(curr,end.id));
             var y = x.route;
+            flight.addAll(y);
             movesAllowed += x.moves;
             perms.add(end.id);
 
 
             if (movesUsed > movesAllowed) { //prepare for next loop
+                g  = (SimpleDirectedWeightedGraph<String,tspEdge>) realGraph.clone();
+                addEnd(g);
                 removed.add(worstEndVert(g));
                 g  = (SimpleDirectedWeightedGraph<String,tspEdge>) realGraph.clone();
                 g.removeAllVertices(removed);
@@ -248,11 +251,12 @@ public class PathBuilder {
     private void addEnd(SimpleDirectedWeightedGraph<String, tspEdge> g) {
         g.addVertex(end.id);
         for (var y : g.vertexSet()) {
-            if (!y.equals(end.id)) {
+            if (!(y.equals(end.id) || y.equals(start.id)) ) {
                 var route = myMapping.getRoute(todaysOrders.get(y).getDestination(),
                         end.coordinates);
                 var distXY = (myMapping.getNumberOfMovesOfRoute(route));
                 var weight = distXY / (double) todaysOrders.get(y).getDeliveryCost();
+               // System.out.println("YOTE " + weight);
 
                 var edge = new tspEdge();
                 edge.weight = weight;
