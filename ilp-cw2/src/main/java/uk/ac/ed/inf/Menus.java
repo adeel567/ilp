@@ -24,6 +24,8 @@ public class Menus {
 
     //shops obtained from server
     private final ArrayList<Shop> shops;
+    private final HashMap<String,Integer> itemPrices;
+    private final HashMap<String,Shop> itemStops;
 
     /**
      * Creates a Menu object by passing in the details for the server.
@@ -35,6 +37,8 @@ public class Menus {
         this.serverName = serverName;
         this.serverPort = serverPort;
         this.shops = new ArrayList<>(getShopDetails()); //get all shops once.
+        this.itemPrices = new HashMap<>(getItemPrices());
+        this.itemStops = new HashMap<>(getItemStops());
     }
 
     /**
@@ -43,13 +47,21 @@ public class Menus {
      * @return the total cost of delivery in pence.
      */
     public int getDeliveryCost(String... items){
-        HashMap<String, Integer> itemPrices = getItemPrices();
-
         int totalPrice = STANDARD_DELIVERY_CHARGE; //all orders must start from base price of delivery
         for (String itemName : items) {
             totalPrice += itemPrices.get(itemName);
         }
         return totalPrice;
+    }
+
+    public ArrayList<Shop> getDeliveryStops(String... items) {
+        Set<Shop> stops = new HashSet<>();
+        for (String itemName: items) {
+            stops.add(itemStops.get(itemName));
+        }
+
+        return new ArrayList<Shop>(stops);
+
     }
 
     /**
@@ -81,20 +93,13 @@ public class Menus {
         return parsedShops;
     }
 
-    public ArrayList<Shop> getDeliveryStops(String... items) {
+    private HashMap<String, Shop> getItemStops() {
         HashMap<String, Shop> itemStops = new HashMap<>();
         for (Shop shop : this.shops) {
             for (Shop.Menu menu: shop.menu) {
                 itemStops.put(menu.item,shop); //store all values once
             }
         }
-
-        Set<Shop> stops = new HashSet<>();
-        for (String itemName: items) {
-            stops.add(itemStops.get(itemName));
-        }
-
-        return new ArrayList<Shop>(stops);
-
+        return itemStops;
     }
 }

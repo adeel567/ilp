@@ -36,14 +36,6 @@ public class Mapping {
         this.NoFlyZonesPoly = polys;
     }
 
-//    public boolean isInNoFly(LongLat destination) { //check if point falls within nofly
-//        for (Polygon poly : this.NoFlyZonesPoly) {
-//            if (TurfJoins.inside(destination.toPoint(), (com.mapbox.geojson.Polygon) poly)) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
 
     public boolean doesIntersectNoFly(Point start, Point destination) {
 
@@ -51,13 +43,13 @@ public class Mapping {
                 destination.longitude(), destination.latitude());
 
         for (var x : this.NoFlyZonesPoly) {
-            for (int i=0; i<x.coordinates().get(0).size()-1;i++) {
+            for (int i = 0; i < x.coordinates().get(0).size() - 1; i++) {
 
                 var polyLine = new Line2D.Double(
                         x.coordinates().get(0).get(i).longitude(),
                         x.coordinates().get(0).get(i).latitude(),
-                        x.coordinates().get(0).get(i+1).longitude(),
-                        x.coordinates().get(0).get(i+1).latitude());
+                        x.coordinates().get(0).get(i + 1).longitude(),
+                        x.coordinates().get(0).get(i + 1).latitude());
 
                 if (polyLine.intersectsLine(lineToCheck) || lineToCheck.intersectsLine(polyLine)) {
                     return true;
@@ -72,7 +64,7 @@ public class Mapping {
         PriorityQueue<aStarNode> openList = new PriorityQueue<>();
         PriorityQueue<aStarNode> closedList = new PriorityQueue<>();
 
-        start.f = start.g + start.distanceTo(target);
+        start.f = start.g + start.DiagonalDistanceTo(target);
         openList.add(start);
 
         while (!openList.isEmpty()) {
@@ -86,19 +78,19 @@ public class Mapping {
                 var a = n.toPoint();
                 var b = m.toPoint();
 
-                if (!doesIntersectNoFly(a,b) && m.isConfined()) {
+                if (!doesIntersectNoFly(a, b) && m.isConfined()) {
                     double totalWeight = n.g + n.distanceTo(m);
 
                     if (!openList.contains(m) && !closedList.contains(m)) {
                         m.parent = n;
                         m.g = totalWeight;
-                        m.f = m.g + m.distanceTo(target);
+                        m.f = m.g + m.DiagonalDistanceTo(target);
                         openList.add(m);
                     } else {
                         if (totalWeight < m.g) {
                             m.parent = n;
                             m.g = totalWeight;
-                            m.f = m.g + m.distanceTo(target);
+                            m.f = m.g + m.DiagonalDistanceTo(target);
 
                             if (closedList.contains(m)) {
                                 closedList.remove(m);
@@ -114,13 +106,12 @@ public class Mapping {
         return null;
     }
 
-    public ArrayList<DroneMove> getRoute(LongLat startLL, LongLat endLL) {
-//        assert !startLL.closeTo(endLL) : "start is close to end, no path";
+    public ArrayList<DroneMove> getRoute(String job, LongLat startLL, LongLat endLL) {
         if (startLL.closeTo(endLL)) {
-            var x = new DroneMove(startLL, startLL, -999);
+            var x = new DroneMove(job, startLL, startLL, -999);
             var y = new ArrayList<DroneMove>();
             y.add(x);
-             return y;
+            return y;
         }
 
         aStarNode start = new aStarNode(startLL.longitude, startLL.latitude);
@@ -137,49 +128,17 @@ public class Mapping {
         Collections.reverse(path);
 //        System.out.println("YET");
 //      //  System.out.println(path.size());
-        return pathToMoves(path);
+        return pathToMoves(path, job);
     }
 
-    private ArrayList<DroneMove> pathToMoves(List<aStarNode> path) {
+    private ArrayList<DroneMove> pathToMoves(List<aStarNode> path, String job) {
         ArrayList<DroneMove> moves = new ArrayList<>();
-        for (int i = 0; i < path.size()-1; i++) {
+        for (int i = 0; i < path.size() - 1; i++) {
             var x = path.get(i).asLongLat();
-            var y = path.get(i+1).asLongLat();
-            var ang = path.get(i+1).angle;
-            moves.add(new DroneMove(x,y,ang));
+            var y = path.get(i + 1).asLongLat();
+            var ang = path.get(i + 1).angle;
+            moves.add(new DroneMove(job, x, y, ang));
         }
         return moves;
-    }
-
-    public ArrayList<Point> movesToPath(ArrayList<DroneMove> dms) {
-        var lls = new ArrayList<Point>();
-        lls.add(dms.get(0).getFrom().toPoint());
-        lls.add(dms.get(0).getTo().toPoint());
-
-        if (dms.size() > 1) {
-            for (int i = 1, dmsSize = dms.size(); i < dmsSize; i++) {
-                DroneMove dm = dms.get(i);
-//                lls.add(dm.getFrom().toPoint());
-                lls.add(dm.getTo().toPoint());
-            }
-        }
-        System.out.println("points " + lls.size());
-        return lls;
-    }
-
-
-    public FeatureCollection getRouteAsFC(List<Point> path) {
-        var y = Feature.fromGeometry(
-                (Geometry) LineString.fromLngLats(path));
-      //  System.out.println(y.toJson());
-
-        var x = FeatureCollection.fromFeature(y);
-        System.out.println(x.toJson());
-        return x;
-    }
-
-
-    public int getNumberOfMovesOfRoute(List<DroneMove> points) {
-        return (points.size());
     }
 }

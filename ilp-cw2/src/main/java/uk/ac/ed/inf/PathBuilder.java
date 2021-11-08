@@ -2,78 +2,97 @@ package uk.ac.ed.inf;
 
 import org.jgrapht.graph.*;
 
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
 public class PathBuilder {
 
+
+    private static final int MOVES_ALLOWED = 1500;
+    private static final double AT_LONGITUDE = -3.186874;
+    private static final double AT_LATITUDE = 55.944494;
+
     private HashMap<String,Order> todaysOrders;
-    private final Mapping myMapping = new Mapping("localhost", "9898");
-    //private Graph tspGraph;
+    private ArrayList<String> ordersCompleted;
+    private ArrayList<DroneMove> flightPath;
+
     private SimpleDirectedWeightedGraph<String,tspEdge> realGraph;
 
-    private final Stop start = new Stop("start", new LongLat(-3.186874, 55.944494));
-    private final Stop end = new Stop("end", new LongLat(-3.186874, 55.944494));
+    private Stop start;
+    private Stop end;
+
+    private final Mapping myMapping = new Mapping("localhost", "9898");
+
 
 
     public PathBuilder(HashMap<String,Order> todaysOrders) {
         this.todaysOrders = todaysOrders;
     }
 
-    public void buildNodes(){
-        var realGraph = new SimpleDirectedWeightedGraph<String, tspEdge>(tspEdge.class);
+    public void buildGraph(){
+        this.start = new Stop("START", new LongLat(AT_LONGITUDE, AT_LATITUDE));
+        this.end = new Stop("END", new LongLat(AT_LONGITUDE, AT_LATITUDE));
+
+        var initialGraph = new SimpleDirectedWeightedGraph<String, tspEdge>(tspEdge.class);
 
         for (var orderNo : todaysOrders.keySet()) {
-            realGraph.addVertex(orderNo);
+            initialGraph.addVertex(orderNo);
         }
 
-        for (var x: realGraph.vertexSet()) {
-            for (var y: realGraph.vertexSet()) {
+        for (var x: initialGraph.vertexSet()) {
+            for (var y: initialGraph.vertexSet()) {
                 if (!x.equals(y)) {
+                    var ordX = todaysOrders.get(x);
+                    var ordY = todaysOrders.get(y);
+                    var route = myMapping.getRoute(ordY.getOrderNo(),
+                            ordX.getDestination(), ordY.getStart());
+                    route.addAll(ordY.getFlightPath());
+                    var totalDist = route.size();
+                    var weight = totalDist/(double) ordY.getDeliveryCost();
 
-                    var route = myMapping.getRoute(todaysOrders.get(x).getDestination(),
-                            todaysOrders.get(y).getStart());
-                    route.addAll(todaysOrders.get(y).getFlightPath());
-                    var totalDist = (myMapping.getNumberOfMovesOfRoute(route));
-                   // var totalDist = distXY + todaysOrders.get(y).getMovesUsed();
-                    var weight = totalDist/(double) todaysOrders.get(y).getDeliveryCost();
-
-                    var edge = new tspEdge();
-                    edge.weight = weight;
-                    edge.moves = totalDist;
-                    edge.route = route;
-
-                    realGraph.addEdge(x,y,edge);
-                    realGraph.setEdgeWeight(realGraph.getEdge(x,y),weight);
+                    var edge = new tspEdge(weight, route, totalDist);
+                    initialGraph.addEdge(x,y,edge);
+                    initialGraph.setEdgeWeight(edge,weight);
                 }
             }
         }
 
-        start.id = "START";
-        end.id = "END";
-
-        realGraph.addVertex(start.id);
-        for (var y : realGraph.vertexSet()) {
+        initialGraph.addVertex(start.id); //two separate loops because start is not an order.
+        for (var y : initialGraph.vertexSet()) {
             if (!y.equals(start.id)) {
-                var route = myMapping.getRoute(start.coordinates,
-                        todaysOrders.get(y).getStart());
-                route.addAll(todaysOrders.get(y).getFlightPath());
-                var totalDist = (myMapping.getNumberOfMovesOfRoute(route));
-                var weight = totalDist / (double) todaysOrders.get(y).getDeliveryCost();
+                var ordY = todaysOrders.get(y);
+                var route = myMapping.getRoute(ordY.getOrderNo(), start.coordinates,
+                        ordY.getStart());
+                route.addAll(ordY.getFlightPath());
+                var totalDist = route.size();
+                var weight = totalDist / (double) ordY.getDeliveryCost();
 
-
-                var edge = new tspEdge();
-                edge.weight = weight;
-                edge.moves = totalDist;
-                edge.route = route;
-
-                realGraph.addEdge(start.id, y, edge);
-                realGraph.setEdgeWeight(realGraph.getEdge(start.id, y), weight);
+                var edge = new tspEdge(weight, route, totalDist);
+                initialGraph.addEdge(start.id,y,edge);
+                initialGraph.setEdgeWeight(edge,weight);
             }
         }
 
-        this.realGraph = realGraph;
+        this.realGraph = initialGraph;
+    }
+
+    private void addEnd(SimpleDirectedWeightedGraph<String, tspEdge> g) {
+        g.addVertex(end.id);
+        for (var x : g.vertexSet()) {
+            if (!(x.equals(end.id) || x.equals(start.id)) ) {
+                var ordX = todaysOrders.get(x);
+                var route = myMapping.getRoute(end.id, ordX.getDestination(),
+                        end.coordinates);
+                var totalDist = route.size();
+                var weight = totalDist / (double) ordX.getDeliveryCost();
+
+                var edge = new tspEdge(weight, route, totalDist);
+                g.addEdge(x,end.id,edge);
+                g.setEdgeWeight(edge,weight);
+            }
+        }
     }
 
     private Boolean hasNextEdge (SimpleDirectedWeightedGraph<String,tspEdge> g, String vert) {
@@ -86,137 +105,70 @@ public class PathBuilder {
 
     private String worstEndVert(SimpleDirectedWeightedGraph<String,tspEdge> g) {
         var x = g.getEdgeSource(Collections.max(g.incomingEdgesOf(end.id)));
-        System.out.println(x);
+        System.out.println("REMOVED: " + x);
         return x;
     }
 
-
-    private int tourSize(SimpleDirectedWeightedGraph<String,tspEdge> g, ArrayList<String> vertexes) {
-        assert vertexes.size() > 1  : "tour is of size <=1";
-        int i = 0;
-        for (int j = 0, vertexesSize = vertexes.size()-1; j < vertexesSize; j++) {
-            i += g.getEdge(vertexes.get(j),vertexes.get(j+1)).moves;
-        }
-        return i;
-    }
-
-////    public void buildMatrix() {
-//        this.tspGraph = new Graph(this.todaysOrders.size());
-//
-//        for (var x : todaysOrders) {
-//            for (var y : todaysOrders) {
-//                var from = todaysOrders.indexOf(x);
-//                var to = todaysOrders.indexOf(y);
-//                if (!x.equals(y)) {
-//                    var route = myMapping.getRoute(x.destination, y.getStart());
-//                    var distY = y.totalMovesUsed;
-//                    var distXtoY = myMapping.getNumberOfMovesOfRoute(route);
-//                    var weight = (distY + distXtoY) / (double) y.totalCost;
-//                    tspGraph.initEdges(from, to, weight);
-//                    tspGraph.addMoves(from, to, (distY + distXtoY));
-//                    tspGraph.addRoutes(from, to, route);
-//                } else {
-//                    tspGraph.initEdges(from, to, Double.MAX_VALUE);
-//                }
-//            }
-//        }
-//
-//    }
-
-
-
-//    public void doThang() {
-//        int movesAvail = 1500;
-//        int movesUsed = 0;
-//
-//        ArrayList<Integer> path = new ArrayList<>();
-//
-//        ArrayList<Double> ATtoStartsWeight = new ArrayList<>();
-//        ArrayList<Integer> ATtoStartsMoves = new ArrayList<>();
-//        ArrayList<List<Point>> ATtoStartsRoutes = new ArrayList<>();
-//        for (var x: todaysOrders) {
-//            var route = myMapping.getRoute(this.AT.location, x.getStart());
-//            var distATtoS = myMapping.getNumberOfMovesOfRoute(route);
-//            var weight = distATtoS/(double) x.totalCost;
-//            ATtoStartsMoves.add(distATtoS);
-//            ATtoStartsWeight.add(weight);
-//            ATtoStartsRoutes.add(route);
-//        }
-//
-//        ArrayList<Integer> EndtoATMoves = new ArrayList<>();
-//        ArrayList<List<Point>> EndtoATRoutes = new ArrayList<>();
-//        for (var x: todaysOrders) {
-//            var route = myMapping.getRoute(x.destination, this.AT.location);
-//            var distATtoS = myMapping.getNumberOfMovesOfRoute(route);
-//            EndtoATMoves.add(distATtoS);
-//            EndtoATRoutes.add(route);
-//        }
-//
-//        var startIndex = ATtoStartsWeight.indexOf(Collections.min(ATtoStartsWeight));
-//
-//        path.add(startIndex);
-//        tspGraph.setVisited(startIndex);
-//        movesAvail -= ATtoStartsMoves.get(startIndex);
-////        System.out.println(movesAvail);
-////        myMapping.getRouteAsFC(ATtoStartsRoutes.get(startIndex));
-////        System.out.println(ATtoStartsMoves.size());
-////        System.out.println(todaysOrders.get(startIndex).orderNo);
-//
-//
-//        }
-    //        realGraph.addVertex("yeet");
-//        var localGraph = (SimpleDirectedWeightedGraph<String, tspEdge>) realGraph.clone();
-//        realGraph.removeVertex("yeet");
-//        realGraph.addVertex("yeet");
-//        System.out.println(localGraph.containsVertex("yeet"));
-
-    public void getTour() {
-        var movesAllowed = 1500;
-
-        var g  = (SimpleDirectedWeightedGraph<String,tspEdge>) realGraph.clone();
+    public void doTour() {
+        //copy of graph is needed to delete and add vertexes.
+        //as no underlying modification is being made, a shallow copy is all that is needed.
+        var preserveGraph  = (SimpleDirectedWeightedGraph<String,tspEdge>) realGraph.clone();
         var movesUsed = 0;
         ArrayList<String> perms = null;
         ArrayList<DroneMove> flight = null;
         var curr = start.id;
         ArrayList<String> removed = new ArrayList<>();
 
-        while (movesUsed > movesAllowed || curr.equals(start.id)) {
+        while (movesUsed > MOVES_ALLOWED || curr.equals(start.id)) {
+            var whileGraph  = (SimpleDirectedWeightedGraph<String,tspEdge>) preserveGraph.clone();
             movesUsed = 0;
             curr = start.id;
             perms = new ArrayList<String>();
             flight = new ArrayList<DroneMove>();
 
-            while (hasNextEdge(g, curr)) {
-                var nextEdge = greedyNextEdge(g, curr);
-                movesUsed += nextEdge.moves;
-                flight.addAll(nextEdge.route);
-                var next = g.getEdgeTarget(nextEdge);
+            while (hasNextEdge(whileGraph, curr)) {
+                var nextEdge = greedyNextEdge(whileGraph, curr);
+                movesUsed += nextEdge.getMoves();
+                flight.addAll(nextEdge.getRoute());
+                var next = whileGraph.getEdgeTarget(nextEdge);
                 perms.add(curr);
-                g.removeVertex(curr);
+                whileGraph.removeVertex(curr);
                 curr = next;
             }
 
-            addEnd(g);
+            addEnd(whileGraph); //final order to end location for day.
 
-            var x = (g.getEdge(curr,end.id));
-            var y = x.route;
-            flight.addAll(y);
-            movesAllowed += x.moves;
+            var homeEdge = (whileGraph.getEdge(curr,end.id));
+            flight.addAll(homeEdge.getRoute());
+            movesUsed += homeEdge.getMoves();
             perms.add(end.id);
 
 
-            if (movesUsed > movesAllowed) { //prepare for next loop
-                g  = (SimpleDirectedWeightedGraph<String,tspEdge>) realGraph.clone();
-                addEnd(g);
-                removed.add(worstEndVert(g));
-                g  = (SimpleDirectedWeightedGraph<String,tspEdge>) realGraph.clone();
-                g.removeAllVertices(removed);
+            if (movesUsed > MOVES_ALLOWED) { //prepare for next loop
+                //get order that is 'worst' from end location, remove from graph that will
+                //be reset for use in the next loop
+
+                System.out.println("PERM: "+ perms);
                 System.out.println("MOVES USED " + movesUsed);
+
+                var fixEnds  = (SimpleDirectedWeightedGraph<String,tspEdge>) preserveGraph.clone();
+                addEnd(fixEnds);
+                removed.add(worstEndVert(fixEnds));
+
+                preserveGraph.removeAllVertices(removed);
             }
         }
 
-        /////////////
+        this.ordersCompleted = new ArrayList<>();
+        this.ordersCompleted.addAll(perms);
+        this.ordersCompleted.remove(start.id);
+        this.ordersCompleted.remove(end.id);
 
+        this.flightPath = flight;
+
+
+        /////////////
+        System.out.println("//");
 
         int i = 0;
         for (String s : removed) {
@@ -224,49 +176,52 @@ public class PathBuilder {
         }
         System.out.printf("Cost lost %s%n", i);
 
+        int j = 0;
+        for (String perm : perms) {
+            if (!(perm.equals("START") || perm.equals("END"))) {
+                j+= todaysOrders.get(perm).getDeliveryCost();
+
+            }
+        }
+        System.out.println("total profit $$$ : " + j);
+        System.out.println("Monterey shit" + (j/(double) (i+j) ));
 
 
 
         System.out.println("moves " + movesUsed);
         System.out.println(perms.toString());
-        myMapping.getRouteAsFC(myMapping.movesToPath(flight));
+        DroneMove.getMovesAsFC(flight);
 
 //        for (DroneMove droneMove : flight) {
 //            System.out.println(droneMove.toString());
 //        }
 
+        System.out.println("MOVES :" + flight.size());
         for (i = 0; i < flight.size() - 1; i++) {
             var dm = flight.get(i);
             var dm2 = flight.get(i + 1);
 //            System.out.println(dm);
 
             if (!(dm.getTo().closeTo(dm2.getFrom()))) {
-                System.out.println(dm.toString());
+                System.out.println(dm);
                 System.err.println("UH OH!");
-                System.out.println(dm2.toString());
+                System.out.println(dm2);
             }
         }
     }
 
-    private void addEnd(SimpleDirectedWeightedGraph<String, tspEdge> g) {
-        g.addVertex(end.id);
-        for (var y : g.vertexSet()) {
-            if (!(y.equals(end.id) || y.equals(start.id)) ) {
-                var route = myMapping.getRoute(todaysOrders.get(y).getDestination(),
-                        end.coordinates);
-                var distXY = (myMapping.getNumberOfMovesOfRoute(route));
-                var weight = distXY / (double) todaysOrders.get(y).getDeliveryCost();
-               // System.out.println("YOTE " + weight);
 
-                var edge = new tspEdge();
-                edge.weight = weight;
-                edge.moves = distXY;
-                edge.route = route;
+    public ArrayList<DroneMove> getFlightPath() {
+        return this.flightPath;
+    }
 
-                g.addEdge(y, end.id, edge);
-                g.setEdgeWeight(g.getEdge(y, end.id), weight);
-            }
+    public ArrayList<Order> getOrdersDelivered() {
+        var orders = new ArrayList<Order>();
+        for (String s : ordersCompleted) {
+            orders.add(todaysOrders.get(s));
         }
+        return orders;
     }
 
 }
+

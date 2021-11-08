@@ -3,16 +3,8 @@ package uk.ac.ed.inf;
 import java.util.ArrayList;
 
 public class aStarNode extends LongLat implements Comparable<aStarNode> {
-
-    /**
-     * Create a LongLat object by passing values for longitude and latitude respectively.
-     *
-     * @param longitude a double for longitude
-     * @param latitude  a double for latitude
-     */
-
-    public double f = 0;
-    public double g = 0;
+    public double f = Double.MIN_VALUE;
+    public double g = Double.MIN_VALUE;
     public int angle;
     public aStarNode parent;
 
@@ -21,13 +13,13 @@ public class aStarNode extends LongLat implements Comparable<aStarNode> {
     }
 
     public ArrayList<aStarNode> generateNeighbours(int inc) {
-        ArrayList<aStarNode> peepee = new ArrayList<>();
+        ArrayList<aStarNode> neighbours = new ArrayList<>();
         for (int i =0;i<=350;i+=inc) {
             var x = this.nextPosition(i);
             x.angle = i;
-            peepee.add(x);
+            neighbours.add(x);
         }
-        return peepee;
+        return neighbours;
     }
 
     public LongLat asLongLat() {

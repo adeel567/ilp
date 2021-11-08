@@ -13,12 +13,6 @@ public class LongLat {
 
     //four corners of the confinement area as constants
     private static final double CONFINEMENT_LATITUDE_NORTH = 55.946233;
-
-    @Override
-    public String toString() {
-        return String.format("%s,%s",this.longitude,this.latitude);
-    }
-
     private static final double CONFINEMENT_LATITUDE_SOUTH = 55.942617;
     private static final double CONFINEMENT_LONGITUDE_WEST = -3.192473;
     private static final double CONFINEMENT_LONGITUDE_EAST = -3.184319;
@@ -102,6 +96,15 @@ public class LongLat {
         return Point.fromLngLat(this.longitude,this.latitude);
     }
 
+    public double DiagonalDistanceTo(LongLat destination) {
+        var D = 1;
+        var D2 = 2;
+        var dx = Math.abs(this.longitude - destination.longitude);
+        var dy = Math.abs(this.latitude - destination.latitude);
+        return 2*(dx + dy);
+//        return D * (dx + dy) + (D2 - 2 * D) * Math.min(dx, dy);
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -115,5 +118,11 @@ public class LongLat {
         final LongLat other = (LongLat) obj;
         return this.longitude == other.longitude && this.latitude == other.latitude;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s,%s",this.longitude,this.latitude);
+    }
+
 
 }

@@ -11,6 +11,7 @@ public class Order {
     private ArrayList<DroneMove> internalRoute;
     private LongLat destination;
     private String customer;
+    private String What3Words;
 
     private final String jdbcString = "jdbc:derby://localhost:1527/derbyDB";
     private final Menus myMenu = new Menus("localhost","9898");
@@ -19,12 +20,13 @@ public class Order {
     public Order(String orderNo, String customer, String deliverTo) {
         this.customer = customer;
         this.orderNo = orderNo;
+        this.What3Words = deliverTo;
         this.destination = new What3Words(deliverTo).getCoordinates();
+
         this.orderItems = fetchOrderItems();
         this.allStops = getStops();
         this.internalRoute = this.generateInternalRoute();
         this.deliveryCost = myMenu.getDeliveryCost(this.orderItems.toArray(new String[orderItems.size()]));
-     //   printFlight();
     }
 
     private ArrayList<DroneMove> generateInternalRoute() {
@@ -32,15 +34,30 @@ public class Order {
         ArrayList<DroneMove> route = new ArrayList<>();
 
         assert allStops.size() >=2 : "only one stop on entire journey";
+
+        //if there are two pickups, then try arranging so that the last pickup is closest to destination.
+        if (allStops.size() == 3) {
+            var dist21e = myMapping.getRoute(this.orderNo, allStops.get(0).coordinates,
+                    allStops.get(allStops.size()-1).coordinates).size();
+            var dist12e = myMapping.getRoute(this.orderNo, allStops.get(1).coordinates,
+                    allStops.get(allStops.size()-1).coordinates).size();
+
+            if (dist21e < dist12e) {
+                var temp = allStops.get(0);
+                allStops.set(0, allStops.get(1));
+                allStops.set(1, temp);
+            }
+        }
+
         for (int i = 0; i < allStops.size()-1; i++) {
             var stop = allStops.get(i);
             var stopNext = allStops.get(i+1);
 
-            route.add(new DroneMove(stop.coordinates,stop.coordinates,-999));
-            route.addAll(myMapping.getRoute(stop.coordinates,stopNext.coordinates));
+            route.add(new DroneMove(this.orderNo, stop.coordinates,stop.coordinates,-999));
+            route.addAll(myMapping.getRoute(this.orderNo, stop.coordinates,stopNext.coordinates));
         }
         var dest = allStops.get(allStops.size()-1);
-        route.add(new DroneMove(dest.coordinates,dest.coordinates,-999));
+        route.add(new DroneMove(this.orderNo, dest.coordinates,dest.coordinates,-999));
 
         return route;
     }
@@ -102,9 +119,13 @@ public class Order {
         return this.internalRoute;
     }
 
+    public String getDestinationW3W() {
+        return this.What3Words;
+    }
+
     public void printFlight() {
         System.out.println("/////// order");
-        myMapping.getRouteAsFC(myMapping.movesToPath(internalRoute));
+        DroneMove.getMovesAsFC(internalRoute);
         for (Stop allStop : this.allStops) {
             System.out.println(allStop.id);
         }
@@ -122,8 +143,6 @@ public class Order {
         }
 //            System.out.println(droneMove.toString());
     }
-
-   // public ArrayList<Stop> getAllStops() { return this.stops;}
 
 
 

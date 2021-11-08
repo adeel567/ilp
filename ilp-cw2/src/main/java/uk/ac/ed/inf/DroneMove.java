@@ -1,16 +1,18 @@
 package uk.ac.ed.inf;
 
-import com.mapbox.geojson.Point;
+import com.mapbox.geojson.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DroneMove {
     private LongLat from;
     private LongLat to;
     private int angle;
-    private List<Point> points;
+    private String id;
 
-    public DroneMove(LongLat from, LongLat to, int angle) {
+    public DroneMove(String id, LongLat from, LongLat to, int angle) {
+        this.id = id;
         this.from = from;
         this.to = to;
         this.angle = angle;
@@ -34,23 +36,36 @@ public class DroneMove {
 
     @Override
     public String toString() {
-        return (String.format("From: %s, to: %s, angle: %s", this.from,this.to,this.angle));
+        return (String.format("Job: %s, from: %s, to: %s, angle: %s", this.id, this.from,this.to,this.angle));
     }
 
-    public int getAngle() {
-        return angle;
+    private static ArrayList<Point> movesToPath(ArrayList<DroneMove> dms) {
+        var lls = new ArrayList<Point>();
+        lls.add(dms.get(0).getFrom().toPoint());
+        lls.add(dms.get(0).getTo().toPoint());
+
+        if (dms.size() > 1) {
+            for (int i = 1, dmsSize = dms.size(); i < dmsSize; i++) {
+                DroneMove dm = dms.get(i);
+                lls.add(dm.getTo().toPoint());
+            }
+        }
+        System.out.println("points " + lls.size());
+        return lls;
     }
 
-    public void setAngle(int angle) {
-        assert angle%10 == 0 : "invalid angle";
-        this.angle = angle;
+
+    private static FeatureCollection getRouteAsFC(List<Point> path) {
+        var feature = Feature.fromGeometry(
+                (Geometry) LineString.fromLngLats(path));
+
+        var fc = FeatureCollection.fromFeature(feature);
+        System.out.println(fc.toJson());
+        return fc;
     }
 
-    public List<Point> getPoints() {
-        return points;
-    }
-
-    public void setPoints(List<Point> points) {
-        this.points = points;
+    public static FeatureCollection getMovesAsFC(ArrayList<DroneMove> dms) {
+        var x = movesToPath(dms);
+        return getRouteAsFC(x);
     }
 }

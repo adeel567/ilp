@@ -1,12 +1,14 @@
 package uk.ac.ed.inf;
 
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.Date;
 
 public class OrderHandler {
 
-    private String date;
+    private final LocalDate date;
     private HashMap<String,Order> orders;
 
     private final String jdbcString = "jdbc:derby://localhost:1527/derbyDB";
@@ -14,10 +16,8 @@ public class OrderHandler {
     private final Mapping myMapping = new Mapping("localhost", "9898");
 
 
-    public OrderHandler(String date) {
-       // this.date = new GregorianCalendar(year,month,day).getTime();
-        //System.out.println(String.valueOf(date));
-        this.date = date;
+    public OrderHandler(int dd, int mm, int yyyy) {
+        this.date = LocalDate.of(yyyy,mm,dd);
     }
 
     public void fetchOrders() {
@@ -25,19 +25,15 @@ public class OrderHandler {
             Connection conn = DriverManager.getConnection(jdbcString);
             final String ordersQuery = "select * from orders where deliveryDate=(?)";
             PreparedStatement psOrdersQuery = conn.prepareStatement(ordersQuery);
-            psOrdersQuery.setString(1, date);
+            psOrdersQuery.setString(1, date.format(DateTimeFormatter.ISO_LOCAL_DATE));
 
             HashMap<String,Order> ordersList = new HashMap<>();
             ResultSet rs = psOrdersQuery.executeQuery();
             while(rs.next()) {
-//            while(rs.next() && ordersList.size() <2) {
 
                     String orderNo = rs.getString("orderNo");
                 String customer = rs.getString("customer");
                 String deliverTo = rs.getString("deliverTo");
-//                System.out.println("NEXT ORDER!!!!!!!!");
-//                System.out.println(orderNo);
-//                System.out.println(deliverTo);
                 var order = new Order(orderNo,customer,deliverTo);
                 ordersList.put(order.getOrderNo(),order);
             }
@@ -47,7 +43,17 @@ public class OrderHandler {
         }
     }
 
-    public HashMap<String,Order> getOrders(){
+
+    public HashMap<String,Order> getAllOrders(){
         return this.orders;
     }
+
+    public Order getOrder(String orderNo) {
+        return this.orders.get(orderNo);
+    }
+
+    public LocalDate getDate() {
+        return this.date;
+    }
+
 }

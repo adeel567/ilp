@@ -2,8 +2,6 @@ package uk.ac.ed.inf;
 
 import org.junit.Test;
 
-import java.util.Map;
-
 import static org.junit.Assert.*;
 
 public class AppTest {
@@ -192,27 +190,15 @@ public class AppTest {
         assertEquals(4 * 460 + 50, totalCost);
     }
 
-//    @Test
-//    public void testicle() {
-//        LongLat ll = new LongLat(-3.1902,55.9450);
-//        System.out.println(new Mapping("localhost","9898").isInNoFly(ll));
-//    }
-
-//
-//    @Test
-//    public void testIntersection() {
-//        var a = Point
-//        System.out.println(new Mapping("localhost","9898").isInNoFly(ll));
-//    }
 
     @Test
     public void testRoute1() {
         LongLat start = new LongLat(-3.1880, 55.9461);
         LongLat end = new LongLat(-3.1890, 55.9427);
         Mapping test = new Mapping("localhost","9898");
-        var x = test.getRoute(start, end);
-        System.out.println(test.getNumberOfMovesOfRoute(x));
-        var y = test.getRouteAsFC(test.movesToPath(x));
+        var x = test.getRoute("JUNK",start, end);
+        System.out.println(x.size());
+        DroneMove.getMovesAsFC(x);
     }
 
     @Test
@@ -220,62 +206,54 @@ public class AppTest {
         aStarNode end = new aStarNode(-3.191065, 55.945626);
         aStarNode start = new aStarNode(-3.186103, 55.944656);
         Mapping test = new Mapping("localhost","9898");
-        var x = test.getRoute(start, end);
-        System.out.println(test.getNumberOfMovesOfRoute(x));
-        var y = test.getRouteAsFC(test.movesToPath(x));
-    }
+        var x = test.getRoute("JUNK",start, end);
+        System.out.println(x.size());
+        DroneMove.getMovesAsFC(x);    }
 
     @Test
     public void testRoute3() {
         aStarNode start = new aStarNode(-3.191065, 55.945626);
         aStarNode end = new aStarNode(-3.187837, 55.943497);
         Mapping test = new Mapping("localhost","9898");
-        var x = test.getRoute(start, end);
-        System.out.println(test.getNumberOfMovesOfRoute(x));
-        var y = test.getRouteAsFC(test.movesToPath(x));
-    }
+        var x = test.getRoute("JUNK",start, end);
+        System.out.println(x.size());
+        DroneMove.getMovesAsFC(x);    }
 
     @Test
     public void testRoute4() {
         aStarNode start = new aStarNode(-3.191594,55.943658);
         aStarNode end = new aStarNode(-3.186199,55.945734);
         Mapping test = new Mapping("localhost","9898");
-        var x = test.getRoute(start, end);
-        System.out.println(test.getNumberOfMovesOfRoute(x));
-        var y = test.getRouteAsFC(test.movesToPath(x));
-    }
+        var x = test.getRoute("JUNK",start, end);
+        System.out.println(x.size());
+        DroneMove.getMovesAsFC(x);    }
 
     @Test
     public void testRoute5() {
         aStarNode start = new aStarNode(-3.191065, 55.945626);
         aStarNode end = new aStarNode(-3.191065, 55.945726);
         Mapping test = new Mapping("localhost","9898");
-        var x = test.getRoute(start, end);
-        System.out.println(test.getNumberOfMovesOfRoute(x));
-        var y = test.getRouteAsFC(test.movesToPath(x));
-    }
+        var x = test.getRoute("JUNK",start, end);
+        System.out.println(x.size());
+        DroneMove.getMovesAsFC(x);    }
 
     @Test
     public void testRouteShortHover() {
         LongLat start = new LongLat(-3.1890,55.9452);
         LongLat end = new LongLat(-3.1890+0.00015*2,55.9452);
         Mapping test = new Mapping("localhost","9898");
-        var x = test.getRoute(start, end);
-        x.add(new DroneMove(end,end, -999));
-        System.out.println(test.getNumberOfMovesOfRoute(x));
-        var y = test.getRouteAsFC(test.movesToPath(x));
+        var x = test.getRoute("JUNK",start, end);
+        x.add(new DroneMove("JUNK",end,end, -999));
+        System.out.println(x.size());
+        var y = DroneMove.getMovesAsFC(x);
+
+        assertEquals(x.size(),3);
 
     }
 
-
-//    @Test
-//    public void testOrder() {
-//        var x = new Order("38b349ff", "spell.stick.scale");
-//    }
-
     @Test
     public void testFetchOrders() {
-        var x = new OrderHandler("2022-12-31");
+        var x = new OrderHandler(31,12,2022);
         x.fetchOrders();
     }
 
@@ -302,10 +280,20 @@ public class AppTest {
 
     @Test
     public void testTSP() {
-        var x = new OrderHandler("2022-12-25");
+        var config = Config.getInstance();
+        var x = new OrderHandler(27,12,2023);
         x.fetchOrders();
-        var y = new PathBuilder(x.getOrders());
-        y.buildNodes();
-        y.getTour();
+        var y = new PathBuilder(x.getAllOrders());
+        y.buildGraph();
+        y.doTour();
+    }
+
+    @Test
+    public void testTSP2() {
+        var x = new OrderHandler(31,12,2023);
+        x.fetchOrders();
+        var y = new PathBuilder(x.getAllOrders());
+        y.buildGraph();
+        y.doTour();
     }
 }
