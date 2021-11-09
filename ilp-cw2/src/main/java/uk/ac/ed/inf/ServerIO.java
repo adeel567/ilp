@@ -17,6 +17,7 @@ public class ServerIO {
     private static final int TIMEOUT_DURATION_IN_SECS = 10;
     private static final int HTTP_SUCCESS = 200;
     private static final HttpClient client = HttpClient.newHttpClient();
+    private static final Config config = Config.getInstance();
 
     /**
      * Performs a GET request on the server and returns the contents.
@@ -35,6 +36,7 @@ public class ServerIO {
             if (response.statusCode() != HTTP_SUCCESS) {
                 System.err.printf("Fatal error due to error code: %s%n",
                         response.statusCode());
+                System.err.printf("on URL: " + urlString + "%n");
                 System.exit(1);
             }
         } catch (IOException | InterruptedException e) {
@@ -42,6 +44,16 @@ public class ServerIO {
             System.exit(1);
         }
         return response.body();
+    }
+
+    /**
+     * Build a URL from a given path using the set host and port given by config
+     * @param path filepath on the server
+     * @return String of the request to be made
+     */
+    public static String URLFromPath(String path) {
+        return String.format("http://%s:%s/%s",config.getServerHost(),config.getServerPort(),path);
+
     }
 
 }

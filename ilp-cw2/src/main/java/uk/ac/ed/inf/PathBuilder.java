@@ -2,7 +2,6 @@ package uk.ac.ed.inf;
 
 import org.jgrapht.graph.*;
 
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,7 +22,7 @@ public class PathBuilder {
     private Stop start;
     private Stop end;
 
-    private final Mapping myMapping = new Mapping("localhost", "9898");
+    private final Navigation myNavigation = Navigation.getInstance();
 
 
 
@@ -46,7 +45,7 @@ public class PathBuilder {
                 if (!x.equals(y)) {
                     var ordX = todaysOrders.get(x);
                     var ordY = todaysOrders.get(y);
-                    var route = myMapping.getRoute(ordY.getOrderNo(),
+                    var route = myNavigation.getRoute(ordY.getOrderNo(),
                             ordX.getDestination(), ordY.getStart());
                     route.addAll(ordY.getFlightPath());
                     var totalDist = route.size();
@@ -63,7 +62,7 @@ public class PathBuilder {
         for (var y : initialGraph.vertexSet()) {
             if (!y.equals(start.id)) {
                 var ordY = todaysOrders.get(y);
-                var route = myMapping.getRoute(ordY.getOrderNo(), start.coordinates,
+                var route = myNavigation.getRoute(ordY.getOrderNo(), start.coordinates,
                         ordY.getStart());
                 route.addAll(ordY.getFlightPath());
                 var totalDist = route.size();
@@ -83,7 +82,7 @@ public class PathBuilder {
         for (var x : g.vertexSet()) {
             if (!(x.equals(end.id) || x.equals(start.id)) ) {
                 var ordX = todaysOrders.get(x);
-                var route = myMapping.getRoute(end.id, ordX.getDestination(),
+                var route = myNavigation.getRoute(end.id, ordX.getDestination(),
                         end.coordinates);
                 var totalDist = route.size();
                 var weight = totalDist / (double) ordX.getDeliveryCost();

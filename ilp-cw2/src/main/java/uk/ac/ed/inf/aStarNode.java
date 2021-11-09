@@ -14,7 +14,7 @@ public class aStarNode extends LongLat implements Comparable<aStarNode> {
 
     public ArrayList<aStarNode> generateNeighbours(int inc) {
         ArrayList<aStarNode> neighbours = new ArrayList<>();
-        for (int i =0;i<=350;i+=inc) {
+        for (int i = LongLat.MIN_ANGLE; i<= LongLat.MAX_ANGLE; i+=inc) {
             var x = this.nextPosition(i);
             x.angle = i;
             neighbours.add(x);

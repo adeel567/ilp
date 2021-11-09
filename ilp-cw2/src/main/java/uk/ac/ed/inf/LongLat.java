@@ -12,20 +12,20 @@ public class LongLat {
 
 
     //four corners of the confinement area as constants
-    private static final double CONFINEMENT_LATITUDE_NORTH = 55.946233;
-    private static final double CONFINEMENT_LATITUDE_SOUTH = 55.942617;
-    private static final double CONFINEMENT_LONGITUDE_WEST = -3.192473;
-    private static final double CONFINEMENT_LONGITUDE_EAST = -3.184319;
+    public static final double CONFINEMENT_LATITUDE_NORTH = 55.946233;
+    public static final double CONFINEMENT_LATITUDE_SOUTH = 55.942617;
+    public static final double CONFINEMENT_LONGITUDE_WEST = -3.192473;
+    public static final double CONFINEMENT_LONGITUDE_EAST = -3.184319;
 
     //constants for different distances required
-    private static final double CLOSE_TO_DISTANCE = 0.00015;
-    private static final double STRAIGHT_LINE_DISTANCE = 0.00015;
+    public static final double CLOSE_TO_DISTANCE = 0.00015;
+    public static final double STRAIGHT_LINE_DISTANCE = 0.00015;
 
     //constants for angles
-    private static final int MIN_ANGLE = 0;
-    private static final int MAX_ANGLE = 350;
-    private static final int JUNK_ANGLE = -999;
-    private static final int ANGLE_INTERVAL = 10;
+    public static final int MIN_ANGLE = 0;
+    public static final int MAX_ANGLE = 350;
+    public static final int JUNK_ANGLE = -999;
+    public static final int ANGLE_INTERVAL = 10;
 
 
     /** Stores the longitude of current location */
@@ -98,11 +98,11 @@ public class LongLat {
 
     public double DiagonalDistanceTo(LongLat destination) {
         var D = 1;
-        var D2 = 2;
+        var D2 = 3;
         var dx = Math.abs(this.longitude - destination.longitude);
         var dy = Math.abs(this.latitude - destination.latitude);
         return 2*(dx + dy);
-//        return D * (dx + dy) + (D2 - 2 * D) * Math.min(dx, dy);
+       // return D * (dx + dy) + (D2 - 2 * D) * Math.min(dx, dy);
     }
 
     @Override

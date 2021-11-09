@@ -129,7 +129,7 @@ public class AppTest {
     @Test
     public void testMenusOne() {
         // The webserver must be running on port 9898 to run this test.
-        Menus menus = new Menus("localhost", "9898");
+        Menus menus = Menus.getInstance();
         int totalCost = menus.getDeliveryCost(
                 "Ham and mozzarella Italian roll"
         );
@@ -140,7 +140,7 @@ public class AppTest {
     @Test
     public void testMenusTwo() {
         // The webserver must be running on port 9898 to run this test.
-        Menus menus = new Menus("localhost", "9898");
+        Menus menus = Menus.getInstance();
         int totalCost = menus.getDeliveryCost(
                 "Ham and mozzarella Italian roll",
                 "Salami and Swiss Italian roll"
@@ -152,7 +152,7 @@ public class AppTest {
     @Test
     public void testMenusThree() {
         // The webserver must be running on port 9898 to run this test.
-        Menus menus = new Menus("localhost", "9898");
+        Menus menus = Menus.getInstance();
         int totalCost = menus.getDeliveryCost(
                 "Ham and mozzarella Italian roll",
                 "Salami and Swiss Italian roll",
@@ -165,7 +165,7 @@ public class AppTest {
     @Test
     public void testMenusFourA() {
         // The webserver must be running on port 9898 to run this test.
-        Menus menus = new Menus("localhost", "9898");
+        Menus menus = Menus.getInstance();
         int totalCost = menus.getDeliveryCost(
                 "Ham and mozzarella Italian roll",
                 "Salami and Swiss Italian roll",
@@ -179,7 +179,7 @@ public class AppTest {
     @Test
     public void testMenusFourB() {
         // The webserver must be running on port 9898 to run this test.
-        Menus menus = new Menus("localhost", "9898");
+        Menus menus = Menus.getInstance();
         int totalCost = menus.getDeliveryCost(
                 "Flaming tiger latte",
                 "Dirty matcha latte",
@@ -195,7 +195,7 @@ public class AppTest {
     public void testRoute1() {
         LongLat start = new LongLat(-3.1880, 55.9461);
         LongLat end = new LongLat(-3.1890, 55.9427);
-        Mapping test = new Mapping("localhost","9898");
+        Navigation test = Navigation.getInstance();
         var x = test.getRoute("JUNK",start, end);
         System.out.println(x.size());
         DroneMove.getMovesAsFC(x);
@@ -205,7 +205,7 @@ public class AppTest {
     public void testRoute2() {
         aStarNode end = new aStarNode(-3.191065, 55.945626);
         aStarNode start = new aStarNode(-3.186103, 55.944656);
-        Mapping test = new Mapping("localhost","9898");
+        Navigation test = Navigation.getInstance();
         var x = test.getRoute("JUNK",start, end);
         System.out.println(x.size());
         DroneMove.getMovesAsFC(x);    }
@@ -214,7 +214,7 @@ public class AppTest {
     public void testRoute3() {
         aStarNode start = new aStarNode(-3.191065, 55.945626);
         aStarNode end = new aStarNode(-3.187837, 55.943497);
-        Mapping test = new Mapping("localhost","9898");
+        Navigation test = Navigation.getInstance();
         var x = test.getRoute("JUNK",start, end);
         System.out.println(x.size());
         DroneMove.getMovesAsFC(x);    }
@@ -223,7 +223,7 @@ public class AppTest {
     public void testRoute4() {
         aStarNode start = new aStarNode(-3.191594,55.943658);
         aStarNode end = new aStarNode(-3.186199,55.945734);
-        Mapping test = new Mapping("localhost","9898");
+        Navigation test = Navigation.getInstance();
         var x = test.getRoute("JUNK",start, end);
         System.out.println(x.size());
         DroneMove.getMovesAsFC(x);    }
@@ -232,7 +232,7 @@ public class AppTest {
     public void testRoute5() {
         aStarNode start = new aStarNode(-3.191065, 55.945626);
         aStarNode end = new aStarNode(-3.191065, 55.945726);
-        Mapping test = new Mapping("localhost","9898");
+        Navigation test = Navigation.getInstance();
         var x = test.getRoute("JUNK",start, end);
         System.out.println(x.size());
         DroneMove.getMovesAsFC(x);    }
@@ -241,7 +241,7 @@ public class AppTest {
     public void testRouteShortHover() {
         LongLat start = new LongLat(-3.1890,55.9452);
         LongLat end = new LongLat(-3.1890+0.00015*2,55.9452);
-        Mapping test = new Mapping("localhost","9898");
+        Navigation test = Navigation.getInstance();
         var x = test.getRoute("JUNK",start, end);
         x.add(new DroneMove("JUNK",end,end, -999));
         System.out.println(x.size());
@@ -259,7 +259,7 @@ public class AppTest {
 
     @Test
     public void getWhichPickups() {
-        var x = new Menus("localhost", "9898");
+        var x =  Menus.getInstance();
         var y = x.getDeliveryStops("Flafel with avocado wrap", "Humus and aubergine wrap",
                 "Goat's cheese salad Italian roll", "Hummus, falafel and spicy tomato French country roll");
         System.out.println(y.toString());
@@ -267,7 +267,7 @@ public class AppTest {
 
     @Test
     public void getWhichPickups2() {
-        var x = new Menus("localhost", "9898");
+        var x =  Menus.getInstance();
         var y = x.getDeliveryStops("Feta cheese and sundried tomato wrap",
                 "Flafel with humus wrap", "Apple fruit tea", "Mango cap tea");
         System.out.println(y.toString());
@@ -279,9 +279,19 @@ public class AppTest {
     }
 
     @Test
+    public void testTSP0() {
+        var config = Config.getInstance();
+        var x = new OrderHandler(1,2,2022);
+        x.fetchOrders();
+        var y = new PathBuilder(x.getAllOrders());
+        y.buildGraph();
+        y.doTour();
+    }
+
+    @Test
     public void testTSP() {
         var config = Config.getInstance();
-        var x = new OrderHandler(27,12,2023);
+        var x = new OrderHandler(28,9,2023);
         x.fetchOrders();
         var y = new PathBuilder(x.getAllOrders());
         y.buildGraph();

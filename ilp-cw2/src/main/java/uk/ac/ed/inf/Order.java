@@ -13,9 +13,8 @@ public class Order {
     private String customer;
     private String What3Words;
 
-    private final String jdbcString = "jdbc:derby://localhost:1527/derbyDB";
-    private final Menus myMenu = new Menus("localhost","9898");
-    private final Mapping myMapping = new Mapping("localhost", "9898");
+    private final Menus myMenu = Menus.getInstance();
+    private final Navigation myNavigation = Navigation.getInstance();
 
     public Order(String orderNo, String customer, String deliverTo) {
         this.customer = customer;
@@ -37,9 +36,9 @@ public class Order {
 
         //if there are two pickups, then try arranging so that the last pickup is closest to destination.
         if (allStops.size() == 3) {
-            var dist21e = myMapping.getRoute(this.orderNo, allStops.get(0).coordinates,
+            var dist21e = myNavigation.getRoute(this.orderNo, allStops.get(0).coordinates,
                     allStops.get(allStops.size()-1).coordinates).size();
-            var dist12e = myMapping.getRoute(this.orderNo, allStops.get(1).coordinates,
+            var dist12e = myNavigation.getRoute(this.orderNo, allStops.get(1).coordinates,
                     allStops.get(allStops.size()-1).coordinates).size();
 
             if (dist21e < dist12e) {
@@ -49,21 +48,25 @@ public class Order {
             }
         }
 
+        //add pickups to the route.
         for (int i = 0; i < allStops.size()-1; i++) {
             var stop = allStops.get(i);
             var stopNext = allStops.get(i+1);
 
-            route.add(new DroneMove(this.orderNo, stop.coordinates,stop.coordinates,-999));
-            route.addAll(myMapping.getRoute(this.orderNo, stop.coordinates,stopNext.coordinates));
+            route.add(new DroneMove(this.orderNo, stop.coordinates,stop.coordinates,LongLat.JUNK_ANGLE)); //hover
+            route.addAll(myNavigation.getRoute(this.orderNo, stop.coordinates,stopNext.coordinates));
         }
+
+        //add the customer to the route.
         var dest = allStops.get(allStops.size()-1);
-        route.add(new DroneMove(this.orderNo, dest.coordinates,dest.coordinates,-999));
+        route.add(new DroneMove(this.orderNo, dest.coordinates,dest.coordinates,LongLat.JUNK_ANGLE));
 
         return route;
     }
 
     private ArrayList<Stop> getStops() {
-        var unorderedShops = myMenu.getDeliveryStops(this.orderItems.toArray(new String[orderItems.size()]));
+        var unorderedShops =
+                myMenu.getDeliveryStops(this.orderItems.toArray(new String[orderItems.size()]));
 
         ArrayList<Stop> allStops = new ArrayList<>();
         for (Shop shop : unorderedShops) {
@@ -77,7 +80,7 @@ public class Order {
 
     private ArrayList<String> fetchOrderItems(){
         try {
-            Connection conn = DriverManager.getConnection(jdbcString);
+            Connection conn = DriverManager.getConnection(DatabaseIO.jdbcString);
             final String itemsQuery = "select * from orderDetails where orderNo=(?)";
             PreparedStatement psItemsQuery = conn.prepareStatement(itemsQuery);
             psItemsQuery.setString(1,this.orderNo);
@@ -90,6 +93,7 @@ public class Order {
             }
             return itemsList;
         } catch (SQLException throwables) {
+            System.err.println("ERROR Reading from database.");
             throwables.printStackTrace();
         }
         return null;

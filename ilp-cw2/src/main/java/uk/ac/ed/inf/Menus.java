@@ -19,26 +19,25 @@ public class Menus {
     //constant for the path on the server where the menu is located
     private static final String SERVER_PATH_TO_MENU = "menus/menus.json";
 
-    private final String serverName;
-    private final String serverPort;
+    //singleton
+    private static Menus instance = null;
 
     //shops obtained from server
     private final ArrayList<Shop> shops;
     private final HashMap<String,Integer> itemPrices;
     private final HashMap<String,Shop> itemStops;
 
-    /**
-     * Creates a Menu object by passing in the details for the server.
-     * Once created it fetches the menus for all shops.
-     * @param serverName hostname of the server to connect to.
-     * @param serverPort port on the server to connect to.
-     */
-    public Menus(String serverName, String serverPort) {
-        this.serverName = serverName;
-        this.serverPort = serverPort;
+    private Menus() {
         this.shops = new ArrayList<>(getShopDetails()); //get all shops once.
         this.itemPrices = new HashMap<>(getItemPrices());
         this.itemStops = new HashMap<>(getItemStops());
+    }
+
+    public static Menus getInstance() {
+        if (instance == null) {
+            instance = new Menus();
+        }
+        return instance;
     }
 
     /**
@@ -84,7 +83,7 @@ public class Menus {
      * @return a collection of parsed Shop objects as ArrayList.
      */
     private ArrayList<Shop> getShopDetails() {
-        String MenuURL = String.format("http://%s:%s/%s",this.serverName,this.serverPort, SERVER_PATH_TO_MENU);
+        String MenuURL = ServerIO.URLFromPath(SERVER_PATH_TO_MENU);
         String response = ServerIO.getRequest(MenuURL); //get an unparsed response from server
 
         ArrayList<Shop> parsedShops;

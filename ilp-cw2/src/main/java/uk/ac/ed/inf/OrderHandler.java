@@ -4,16 +4,14 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.Date;
 
 public class OrderHandler {
 
     private final LocalDate date;
     private HashMap<String,Order> orders;
 
-    private final String jdbcString = "jdbc:derby://localhost:1527/derbyDB";
-    private final Menus myMenu = new Menus("localhost","9898");
-    private final Mapping myMapping = new Mapping("localhost", "9898");
+    private final Menus myMenu = Menus.getInstance();
+    private final Navigation myNavigation = Navigation.getInstance();
 
 
     public OrderHandler(int dd, int mm, int yyyy) {
@@ -22,7 +20,7 @@ public class OrderHandler {
 
     public void fetchOrders() {
         try {
-            Connection conn = DriverManager.getConnection(jdbcString);
+            Connection conn = DriverManager.getConnection(DatabaseIO.jdbcString);
             final String ordersQuery = "select * from orders where deliveryDate=(?)";
             PreparedStatement psOrdersQuery = conn.prepareStatement(ordersQuery);
             psOrdersQuery.setString(1, date.format(DateTimeFormatter.ISO_LOCAL_DATE));
@@ -39,8 +37,10 @@ public class OrderHandler {
             }
             this.orders = ordersList;
         } catch (SQLException throwables) {
+            System.err.println("Error in accessing database");
             throwables.printStackTrace();
         }
+        assert (this.orders.size() > 0) : "Warning: no orders available";
     }
 
 

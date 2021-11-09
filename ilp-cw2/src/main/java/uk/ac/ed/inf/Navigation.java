@@ -8,32 +8,42 @@ import java.util.Collections;
 import java.util.List;
 import java.util.PriorityQueue;
 
-public class Mapping {
+public class Navigation {
 
-    private final String serverName;
-    private final String serverPort;
+    private static final String SERVER_PATH_TO_NFZ = "buildings/no-fly-zones.geojson";
+    private static final int PATHFINDING_ANGLE_INCREMENT = 60;
+
+    private static Navigation instance = null;
+
     private FeatureCollection NoFlyZones;
     private ArrayList<Polygon> NoFlyZonesPoly;
 
-    public Mapping(String serverName, String serverPort) {
-        this.serverName = serverName;
-        this.serverPort = serverPort;
-        fetchNoFlyZones();
+    private Navigation() {
+        this.NoFlyZones = fetchNoFlyZones();
+        this.NoFlyZonesPoly = fetchNoFlyZonesPolygons();
     }
 
-    private void fetchNoFlyZones() {
-        String nfzURL = String.format("http://%s:%s/%s", "localhost", "9898", "buildings/no-fly-zones.geojson");
+    public static Navigation getInstance() {
+        if (instance == null) {
+            instance = new Navigation();
+        }
+        return instance;
+    }
+
+    private FeatureCollection fetchNoFlyZones() {
+        String nfzURL = ServerIO.URLFromPath(SERVER_PATH_TO_NFZ);
         String response = ServerIO.getRequest(nfzURL); //get an unparsed response from server
 
-        FeatureCollection fc = FeatureCollection.fromJson(response);
-        this.NoFlyZones = fc;
+        return FeatureCollection.fromJson(response);
+    }
 
-        assert fc.features() != null;
+    private ArrayList<Polygon> fetchNoFlyZonesPolygons() {
+        assert this.NoFlyZones.features() != null;
         ArrayList<Polygon> polys = new ArrayList<>(); //add all polygons to arraylist
-        for (var feature : fc.features()) {
+        for (var feature : this.NoFlyZones.features()) {
             polys.add((Polygon) feature.geometry());
         }
-        this.NoFlyZonesPoly = polys;
+        return polys;
     }
 
 
@@ -64,7 +74,7 @@ public class Mapping {
         PriorityQueue<aStarNode> openList = new PriorityQueue<>();
         PriorityQueue<aStarNode> closedList = new PriorityQueue<>();
 
-        start.f = start.g + start.DiagonalDistanceTo(target);
+        start.f = (start.g + start.DiagonalDistanceTo(target));
         openList.add(start);
 
         while (!openList.isEmpty()) {
@@ -73,24 +83,23 @@ public class Mapping {
                 return n;
             }
 
-            int inc = 60;
-            for (aStarNode m : n.generateNeighbours(inc)) {
+            for (aStarNode m : n.generateNeighbours(PATHFINDING_ANGLE_INCREMENT)) {
                 var a = n.toPoint();
                 var b = m.toPoint();
 
                 if (!doesIntersectNoFly(a, b) && m.isConfined()) {
-                    double totalWeight = n.g + n.distanceTo(m);
+                    double totalWeight = (n.g + LongLat.STRAIGHT_LINE_DISTANCE);
 
                     if (!openList.contains(m) && !closedList.contains(m)) {
                         m.parent = n;
                         m.g = totalWeight;
-                        m.f = m.g + m.DiagonalDistanceTo(target);
+                        m.f = (m.g + m.DiagonalDistanceTo(target));
                         openList.add(m);
                     } else {
                         if (totalWeight < m.g) {
                             m.parent = n;
                             m.g = totalWeight;
-                            m.f = m.g + m.DiagonalDistanceTo(target);
+                            m.f = (m.g + m.DiagonalDistanceTo(target));
 
                             if (closedList.contains(m)) {
                                 closedList.remove(m);
@@ -103,6 +112,7 @@ public class Mapping {
             openList.remove(n);
             closedList.add(n);
         }
+        System.err.println("PATH COULD NOT BE FOUND");
         return null;
     }
 
@@ -126,8 +136,6 @@ public class Mapping {
         }
         path.add(n);
         Collections.reverse(path);
-//        System.out.println("YET");
-//      //  System.out.println(path.size());
         return pathToMoves(path, job);
     }
 
