@@ -98,11 +98,11 @@ public class LongLat {
 
     public double DiagonalDistanceTo(LongLat destination) {
         var D = 1;
-//        var D2 = Math.sqrt(2);
+        var D2 = Math.sqrt(2);
 //        var D2 = 1;
         var dx = Math.abs(this.longitude - destination.longitude);
         var dy = Math.abs(this.latitude - destination.latitude);
-        return 2*(dx + dy);
+        return 2*(dx + dy); //better for higher angles
 //        return D * (dx + dy) + (D2 - 2 * D) * Math.min(dx, dy);
     }
 

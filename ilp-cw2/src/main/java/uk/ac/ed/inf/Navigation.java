@@ -3,15 +3,12 @@ package uk.ac.ed.inf;
 import com.mapbox.geojson.*;
 
 import java.awt.geom.Line2D;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class Navigation {
 
     private static final String SERVER_PATH_TO_NFZ = "buildings/no-fly-zones.geojson";
-    private static final int PATHFINDING_ANGLE_INCREMENT = 30;
+    private static final int PATHFINDING_ANGLE_INCREMENT = 50;
 
     private static Navigation instance = null;
 
@@ -72,10 +69,12 @@ public class Navigation {
     private aStarNode doAStar(aStarNode start, aStarNode target) {
         PriorityQueue<aStarNode> openList = new PriorityQueue<>();
         PriorityQueue<aStarNode> closedList = new PriorityQueue<>();
+        HashMap<LongLat,aStarNode> all = new HashMap<>();
 
         start.g = 0;
         start.f = (start.g + start.DiagonalDistanceTo(target));
         openList.add(start);
+        all.put(start.asLongLat(),start);
 
         while (!openList.isEmpty()) {
             aStarNode n = openList.peek();
@@ -84,17 +83,28 @@ public class Navigation {
             }
 
             for (aStarNode m : n.generateNeighbours(PATHFINDING_ANGLE_INCREMENT)) {
-                var a = n.toPoint();
-                var b = m.toPoint();
+                var a = m.toPoint();
+                var b = n.toPoint();
 
                 if (!doesIntersectNoFly(a, b) && m.isConfined()) {
                     double totalWeight = (n.g + LongLat.STRAIGHT_LINE_DISTANCE);
+
+                    if (all.containsKey(m.asLongLat())) {
+//                        System.out.println(m);
+//                        System.out.println(all.get(m.asLongLat()));
+                        m = all.get(m.asLongLat());
+//                        System.out.println(m);
+//                        System.out.println("--");
+                    } else {
+                        all.put(m.asLongLat(),m);
+                    }
 
                     if (!openList.contains(m) && !closedList.contains(m)) {
                         m.parent = n;
                         m.g = totalWeight;
                         m.f = (m.g + m.DiagonalDistanceTo(target));
                         openList.add(m);
+
                     } else {
                         if (totalWeight < m.g) {
                             m.parent = n;

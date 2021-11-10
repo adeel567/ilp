@@ -310,9 +310,18 @@ public class AppTest {
     }
 
     @Test
+    public void testTSP3() {
+        var x = new OrderHandler(25,12,2022);
+        x.fetchOrders();
+        var y = new PathBuilder(x.getAllOrders());
+        y.buildGraph();
+        y.doTour();
+    }
+
+    @Test
     public void testYeet() {
         var x = new aStarNode(0,0);
-        x.g = -3;
+
         var y = new aStarNode(0,0);
         var a = new PriorityQueue<aStarNode>();
         a.add(x);

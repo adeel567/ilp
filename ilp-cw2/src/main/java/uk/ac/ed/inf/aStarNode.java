@@ -3,8 +3,8 @@ package uk.ac.ed.inf;
 import java.util.ArrayList;
 
 public class aStarNode extends LongLat implements Comparable<aStarNode> {
-    public double f;
-    public double g;
+    public double f = Double.MAX_VALUE;
+    public double g = Double.MAX_VALUE;
     public int angle;
     public aStarNode parent;
 
@@ -27,6 +27,21 @@ public class aStarNode extends LongLat implements Comparable<aStarNode> {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (obj.getClass() != this.getClass()) {
+            return false;
+        }
+
+        final aStarNode other = (aStarNode) obj;
+        return this.longitude == other.longitude && this.latitude == other.latitude
+                && this.f == other.f && this.g == other.g;
+    }
+
+    @Override
     public int compareTo(aStarNode o) {
         return Double.compare(this.f, o.f);    }
 
@@ -34,5 +49,10 @@ public class aStarNode extends LongLat implements Comparable<aStarNode> {
     public aStarNode nextPosition(int angle) {
         LongLat x = super.nextPosition(angle);
         return new aStarNode(x.longitude, x.latitude);
+    }
+
+    @Override
+    public String toString(){
+        return super.toString() + " f: " + f + " g: " +g;
     }
 }
