@@ -11,7 +11,7 @@ import java.util.PriorityQueue;
 public class Navigation {
 
     private static final String SERVER_PATH_TO_NFZ = "buildings/no-fly-zones.geojson";
-    private static final int PATHFINDING_ANGLE_INCREMENT = 60;
+    private static final int PATHFINDING_ANGLE_INCREMENT = 30;
 
     private static Navigation instance = null;
 
@@ -69,11 +69,11 @@ public class Navigation {
         return false;
     }
 
-
     private aStarNode doAStar(aStarNode start, aStarNode target) {
         PriorityQueue<aStarNode> openList = new PriorityQueue<>();
         PriorityQueue<aStarNode> closedList = new PriorityQueue<>();
 
+        start.g = 0;
         start.f = (start.g + start.DiagonalDistanceTo(target));
         openList.add(start);
 

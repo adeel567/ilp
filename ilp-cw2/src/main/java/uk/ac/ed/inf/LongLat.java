@@ -98,11 +98,12 @@ public class LongLat {
 
     public double DiagonalDistanceTo(LongLat destination) {
         var D = 1;
-        var D2 = 3;
+//        var D2 = Math.sqrt(2);
+//        var D2 = 1;
         var dx = Math.abs(this.longitude - destination.longitude);
         var dy = Math.abs(this.latitude - destination.latitude);
         return 2*(dx + dy);
-       // return D * (dx + dy) + (D2 - 2 * D) * Math.min(dx, dy);
+//        return D * (dx + dy) + (D2 - 2 * D) * Math.min(dx, dy);
     }
 
     @Override
@@ -117,6 +118,14 @@ public class LongLat {
 
         final LongLat other = (LongLat) obj;
         return this.longitude == other.longitude && this.latitude == other.latitude;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 0;
+        result = 31*result + (Double.hashCode(longitude));
+        result = 31*result + (Double.hashCode(latitude));
+        return result;
     }
 
     @Override

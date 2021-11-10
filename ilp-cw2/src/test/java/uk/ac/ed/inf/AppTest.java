@@ -2,6 +2,8 @@ package uk.ac.ed.inf;
 
 import org.junit.Test;
 
+import java.util.PriorityQueue;
+
 import static org.junit.Assert.*;
 
 public class AppTest {
@@ -305,5 +307,17 @@ public class AppTest {
         var y = new PathBuilder(x.getAllOrders());
         y.buildGraph();
         y.doTour();
+    }
+
+    @Test
+    public void testYeet() {
+        var x = new aStarNode(0,0);
+        x.g = -3;
+        var y = new aStarNode(0,0);
+        var a = new PriorityQueue<aStarNode>();
+        a.add(x);
+        System.out.println(a.contains(y));
+        a.remove(y);
+        a.add(y);
     }
 }

@@ -3,8 +3,8 @@ package uk.ac.ed.inf;
 import java.util.ArrayList;
 
 public class aStarNode extends LongLat implements Comparable<aStarNode> {
-    public double f = Double.MIN_VALUE;
-    public double g = Double.MIN_VALUE;
+    public double f;
+    public double g;
     public int angle;
     public aStarNode parent;
 
