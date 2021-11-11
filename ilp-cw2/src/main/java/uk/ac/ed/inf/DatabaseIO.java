@@ -18,7 +18,7 @@ public class DatabaseIO {
             Statement statement = conn.createStatement();
             DatabaseMetaData databaseMetaData = conn.getMetaData();
             ResultSet resultSet = databaseMetaData.getTables(null,null,
-                    "deliveries", null);
+                    "DELIVERIES", null);
             if (resultSet.next()) {
                 statement.execute("drop table deliveries");
             }
@@ -49,7 +49,7 @@ public class DatabaseIO {
             Statement statement = conn.createStatement();
             DatabaseMetaData databaseMetaData = conn.getMetaData();
             ResultSet resultSet = databaseMetaData.getTables(null,null,
-                    "flightpath", null);
+                    "FLIGHTPATH", null);
             if (resultSet.next()) {
                 statement.execute("drop table flightpath");
             }

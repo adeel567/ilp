@@ -1,9 +1,13 @@
 package uk.ac.ed.inf;
 
+/**
+ * Class for representing all possible stops a drone can make
+ * Stores the location and identification information.
+ */
 public class Stop {
-    public LongLat coordinates;
-    public String id;
-    public String orderNo;
+    private LongLat coordinates;
+    private String id;
+    private String orderNo;
 
     public Stop(String id, LongLat coordinates, String orderNo) {
         this.id = id;
@@ -14,6 +18,18 @@ public class Stop {
     @Override
     public String toString(){
         return "id: " + id + " coors: " + coordinates + " orderNo: " +  orderNo;
+    }
+
+    public LongLat getCoordinates() {
+        return coordinates;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getOrderNo() {
+        return orderNo;
     }
 
 }

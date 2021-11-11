@@ -2,9 +2,12 @@ package uk.ac.ed.inf;
 
 import com.google.gson.Gson;
 
+/**
+ * Class for parsing What3Words from a server.
+ */
 public class What3Words {
-    public LongLat coordinates;
-    public String words;
+    private LongLat coordinates;
+    private String words;
 
     private static class w3wCoordinates { //parsing JSON
         coordinates coordinates;
@@ -15,7 +18,11 @@ public class What3Words {
         }
     }
 
-
+    /**
+     * Created by passing the What3Words address.
+     * Constructor parses information from server.
+     * @param w3wString address of location.
+     */
     public What3Words(String w3wString) {
         this.words = w3wString;
 
@@ -26,6 +33,10 @@ public class What3Words {
         this.coordinates = new LongLat(test.coordinates.lng,test.coordinates.lat);
     }
 
+    /**
+     * What3Words as a LongLat.
+     * @return
+     */
     public LongLat getCoordinates() {
         return this.coordinates;
     }

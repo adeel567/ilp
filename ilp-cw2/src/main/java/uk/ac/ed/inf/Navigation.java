@@ -123,8 +123,8 @@ public class Navigation {
     }
 
     public ArrayList<DroneMove> getRoute(String job, LongLat startLL, LongLat endLL) {
-        if (startLL.closeTo(endLL)) {
-            var x = new DroneMove(job, startLL, startLL, -999);
+        if (startLL.closeTo(endLL)) { //if already close then hover.
+            var x = new DroneMove(job, startLL, startLL, LongLat.JUNK_ANGLE);
             var y = new ArrayList<DroneMove>();
             y.add(x);
             return y;

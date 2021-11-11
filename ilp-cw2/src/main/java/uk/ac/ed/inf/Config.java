@@ -1,5 +1,8 @@
 package uk.ac.ed.inf;
 
+/**
+ * Class that holds the current configuration variables to be used in the program
+ */
 public class Config {
     private static Config instance = null;
     private String serverPort = "9898";
