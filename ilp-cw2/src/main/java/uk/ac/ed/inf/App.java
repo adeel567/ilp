@@ -21,7 +21,8 @@ public class App {
         pathBuilder.buildGraph();
         pathBuilder.doTour();
         FileIO.writeGEOJson(pathBuilder.getFlightPath(), orderHandler.getDate());
-
+        DatabaseIO.writeDeliveriesTable(pathBuilder.getOrdersDelivered());
+        DatabaseIO.writeFilepathDatabase(pathBuilder.getFlightPath());
 
 
 
