@@ -240,6 +240,15 @@ public class AppTest {
         DroneMove.getMovesAsFC(x);    }
 
     @Test
+    public void testRoute6() {
+        aStarNode start = new aStarNode(-3.191065, 55.945626);
+        aStarNode end = new aStarNode(-3.191065, 55.945626+LongLat.STRAIGHT_LINE_DISTANCE+0.000001);
+        Navigation test = Navigation.getInstance();
+        var x = test.getRoute("JUNK",start, end);
+        System.out.println(x.size());
+        DroneMove.getMovesAsFC(x);    }
+
+    @Test
     public void testRouteShortHover() {
         LongLat start = new LongLat(-3.1890,55.9452);
         LongLat end = new LongLat(-3.1890+0.00015*2,55.9452);
@@ -274,35 +283,37 @@ public class AppTest {
                 "Flafel with humus wrap", "Apple fruit tea", "Mango cap tea");
         System.out.println(y.toString());
         var z1 = (new What3Words(y.get(0).location));
-        System.out.println(z1.coordinates.toString());
+        System.out.println(z1.getCoordinates().toString());
 
         var z2 = (new What3Words(y.get(1).location));
-        System.out.println(z2.coordinates.toString());
+        System.out.println(z2.getCoordinates().toString());
     }
 
     @Test
     public void testTSP0() {
         var config = Config.getInstance();
-        var x = new OrderHandler(1,2,2022);
+        var x = new OrderHandler(5,1,2022);
         x.fetchOrders();
         var y = new PathBuilder(x.getAllOrders());
         y.buildGraph();
         y.doTour();
-        y.flightFromStopsMade();
         FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
 
     }
 
     @Test
     public void testTSP() {
         var config = Config.getInstance();
-        var x = new OrderHandler(28,9,2023);
+        var x = new OrderHandler(29,9,2023);
         x.fetchOrders();
         var y = new PathBuilder(x.getAllOrders());
         y.buildGraph();
         y.doTour();
-        y.flightFromStopsMade();
         FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
 
     }
 
@@ -313,8 +324,9 @@ public class AppTest {
         var y = new PathBuilder(x.getAllOrders());
         y.buildGraph();
         y.doTour();
-        y.flightFromStopsMade();
         FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
 
     }
 
@@ -325,8 +337,9 @@ public class AppTest {
         var y = new PathBuilder(x.getAllOrders());
         y.buildGraph();
         y.doTour();
-        y.flightFromStopsMade();
         FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
 
     }
 
@@ -337,21 +350,23 @@ public class AppTest {
         var y = new PathBuilder(x.getAllOrders());
         y.buildGraph();
         y.doTour();
-        y.flightFromStopsMade();
         FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
 
     }
 
 
     @Test
     public void testTSP5() {
-        var x = new OrderHandler(3,10,2022);
+        var x = new OrderHandler(9,11,2023);
         x.fetchOrders();
         var y = new PathBuilder(x.getAllOrders());
         y.buildGraph();
         y.doTour();
-        y.flightFromStopsMade();
         FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
     }
 
     @Test

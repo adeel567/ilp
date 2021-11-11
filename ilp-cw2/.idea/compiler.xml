@@ -7,12 +7,15 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="ilp" />
-        <module name="ilp-cw2" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="ilp-cw2" target="14" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="ilp" options="-Xlint:all,-classfile" />
       <module name="ilp-cw2" options="-Xlint:all,-classfile" />
     </option>
   </component>

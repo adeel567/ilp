@@ -34,10 +34,10 @@ public class Order {
 
         //if there are two pickups, then try arranging so that the last pickup is closest to destination.
         if (allStops.size() == 3) {
-            var dist21e = myNavigation.getRoute(this.orderNo, allStops.get(0).coordinates,
-                    allStops.get(allStops.size()-1).coordinates).size();
-            var dist12e = myNavigation.getRoute(this.orderNo, allStops.get(1).coordinates,
-                    allStops.get(allStops.size()-1).coordinates).size();
+            var dist21e = myNavigation.getRoute(this.orderNo, allStops.get(0).getCoordinates(),
+                    allStops.get(allStops.size()-1).getCoordinates()).size();
+            var dist12e = myNavigation.getRoute(this.orderNo, allStops.get(1).getCoordinates(),
+                    allStops.get(allStops.size()-1).getCoordinates()).size();
 
             if (dist21e < dist12e) {
                 var temp = allStops.get(0);
@@ -49,13 +49,15 @@ public class Order {
         ArrayList<DroneMove> route = new ArrayList<>();
 
         //add pickups to the route.
-        route.add(new DroneMove(this.orderNo, allStops.get(0).coordinates,
-                allStops.get(0).coordinates,LongLat.JUNK_ANGLE)); //hover at start
+        route.add(new DroneMove(this.orderNo, allStops.get(0).getCoordinates(),
+                allStops.get(0).getCoordinates(),LongLat.JUNK_ANGLE)); //hover at start
 
         for (int i = 1; i < allStops.size(); i++) {
             var latest = route.get(route.size()-1);
             var stopNext = allStops.get(i);
-            route.addAll(myNavigation.getRoute(this.orderNo, latest.getTo(), stopNext.coordinates));
+
+            route.addAll(myNavigation.getRoute(this.orderNo, latest.getTo(), stopNext.getCoordinates()));
+
             var last = route.get(route.size()-1);
             route.add(new DroneMove(this.orderNo, last.getTo(), last.getTo(),LongLat.JUNK_ANGLE));
         }
@@ -68,7 +70,7 @@ public class Order {
 
         ArrayList<Stop> allStops = new ArrayList<>();
         for (Shop shop : unorderedShops) {
-            var coords = new What3Words(shop.location).coordinates;
+            var coords = new What3Words(shop.location).getCoordinates();
             var s = new Stop(shop.name,coords,this.orderNo);
             allStops.add(s);
         }

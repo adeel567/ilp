@@ -35,17 +35,9 @@ public class DroneMove {
         return from;
     }
 
-//    public void setFrom(LongLat from) {
-//        this.from = from;
-//    }
-
     public LongLat getTo() {
         return to;
     }
-
-//    public void setTo(LongLat to) {
-//        this.to = to;
-//    }
 
     public String getId() {
         return this.id;
@@ -60,6 +52,11 @@ public class DroneMove {
         return (String.format("Job: %s, from: %s, to: %s, angle: %s", this.id, this.from,this.to,this.angle));
     }
 
+    /**
+     *
+     * @param dms
+     * @return
+     */
     private static ArrayList<Point> movesToPath(ArrayList<DroneMove> dms) {
         var lls = new ArrayList<Point>();
         lls.add(dms.get(0).getFrom().toPoint());

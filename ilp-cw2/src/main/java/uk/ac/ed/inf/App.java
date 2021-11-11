@@ -20,10 +20,9 @@ public class App {
         PathBuilder pathBuilder = new PathBuilder(orderHandler.getAllOrders());
         pathBuilder.buildGraph();
         pathBuilder.doTour();
-        pathBuilder.flightFromStopsMade();
         FileIO.writeGEOJson(pathBuilder.getFlightPath(), orderHandler.getDate());
-//        DatabaseIO.writeDeliveriesTable(pathBuilder.getOrdersDelivered());
-     //   DatabaseIO.writeFilepathDatabase(pathBuilder.getFlightPath());
+        DatabaseIO.writeDeliveriesTable(pathBuilder.getOrdersDelivered());
+        DatabaseIO.writeFilepathDatabase(pathBuilder.getFlightPath());
 
 
 
