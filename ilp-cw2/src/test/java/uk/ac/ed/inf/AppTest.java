@@ -288,6 +288,9 @@ public class AppTest {
         var y = new PathBuilder(x.getAllOrders());
         y.buildGraph();
         y.doTour();
+        y.flightFromStopsMade();
+        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+
     }
 
     @Test
@@ -298,6 +301,9 @@ public class AppTest {
         var y = new PathBuilder(x.getAllOrders());
         y.buildGraph();
         y.doTour();
+        y.flightFromStopsMade();
+        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+
     }
 
     @Test
@@ -307,6 +313,9 @@ public class AppTest {
         var y = new PathBuilder(x.getAllOrders());
         y.buildGraph();
         y.doTour();
+        y.flightFromStopsMade();
+        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+
     }
 
     @Test
@@ -316,6 +325,33 @@ public class AppTest {
         var y = new PathBuilder(x.getAllOrders());
         y.buildGraph();
         y.doTour();
+        y.flightFromStopsMade();
+        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+
+    }
+
+    @Test
+    public void testTSP4() {
+        var x = new OrderHandler(31,12,2022);
+        x.fetchOrders();
+        var y = new PathBuilder(x.getAllOrders());
+        y.buildGraph();
+        y.doTour();
+        y.flightFromStopsMade();
+        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+
+    }
+
+
+    @Test
+    public void testTSP5() {
+        var x = new OrderHandler(3,10,2022);
+        x.fetchOrders();
+        var y = new PathBuilder(x.getAllOrders());
+        y.buildGraph();
+        y.doTour();
+        y.flightFromStopsMade();
+        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
     }
 
     @Test

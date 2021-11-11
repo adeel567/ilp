@@ -16,23 +16,36 @@ public class DroneMove {
         this.from = from;
         this.to = to;
         this.angle = angle;
+
+        if (!(from.distanceTo(to) <= LongLat.STRAIGHT_LINE_DISTANCE+0.000000000001)) {
+            System.err.println("DRONE MOVE ILLEGAL");
+            System.err.println(this.toString());
+            System.err.println(from.distanceTo(to));
+        }
+
+        if(angle == LongLat.JUNK_ANGLE && (!(from.equals(to)))) {
+            System.err.println("DRONE HOVER ILLEGAL");
+            System.err.println(this.toString());
+
+        }
+
     }
 
     public LongLat getFrom() {
         return from;
     }
 
-    public void setFrom(LongLat from) {
-        this.from = from;
-    }
+//    public void setFrom(LongLat from) {
+//        this.from = from;
+//    }
 
     public LongLat getTo() {
         return to;
     }
 
-    public void setTo(LongLat to) {
-        this.to = to;
-    }
+//    public void setTo(LongLat to) {
+//        this.to = to;
+//    }
 
     public String getId() {
         return this.id;

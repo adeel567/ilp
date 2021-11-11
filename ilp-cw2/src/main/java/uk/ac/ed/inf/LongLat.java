@@ -96,7 +96,7 @@ public class LongLat {
         return Point.fromLngLat(this.longitude,this.latitude);
     }
 
-    public double DiagonalDistanceTo(LongLat destination) {
+    public double diagonalDistanceTo(LongLat destination) {
         var D = 1;
         var D2 = Math.sqrt(2);
 //        var D2 = 1;

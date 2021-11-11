@@ -13,14 +13,14 @@ public class PathBuilder {
     private static final double AT_LONGITUDE = -3.186874;
     private static final double AT_LATITUDE = 55.944494;
 
-    private HashMap<String,Order> todaysOrders;
+    private final HashMap<String,Order> todaysOrders;
     private ArrayList<String> ordersCompleted;
     private ArrayList<DroneMove> flightPath;
 
     private SimpleDirectedWeightedGraph<String,tspEdge> realGraph;
 
-    private Stop start;
-    private Stop end;
+    private final Stop start;
+    private final Stop end;
 
     private final Navigation myNavigation = Navigation.getInstance();
 
@@ -28,11 +28,11 @@ public class PathBuilder {
 
     public PathBuilder(HashMap<String,Order> todaysOrders) {
         this.todaysOrders = todaysOrders;
+        this.start = new Stop("START", new LongLat(AT_LONGITUDE, AT_LATITUDE),"START");
+        this.end = new Stop("END", new LongLat(AT_LONGITUDE, AT_LATITUDE),"END");
     }
 
     public void buildGraph(){
-        this.start = new Stop("START", new LongLat(AT_LONGITUDE, AT_LATITUDE));
-        this.end = new Stop("END", new LongLat(AT_LONGITUDE, AT_LATITUDE));
 
         var initialGraph = new SimpleDirectedWeightedGraph<String, tspEdge>(tspEdge.class);
 
@@ -123,6 +123,7 @@ public class PathBuilder {
             movesUsed = 0;
             curr = start.id;
             perms = new ArrayList<String>();
+            perms.add(start.id);
             flight = new ArrayList<DroneMove>();
 
             while (hasNextEdge(whileGraph, curr)) {
@@ -130,9 +131,9 @@ public class PathBuilder {
                 movesUsed += nextEdge.getMoves();
                 flight.addAll(nextEdge.getRoute());
                 var next = whileGraph.getEdgeTarget(nextEdge);
-                perms.add(curr);
                 whileGraph.removeVertex(curr);
                 curr = next;
+                perms.add(next);
             }
 
             addEnd(whileGraph); //final order to end location for day.
@@ -158,6 +159,8 @@ public class PathBuilder {
             }
         }
 
+
+        System.out.println(perms);
         this.ordersCompleted = new ArrayList<>();
         this.ordersCompleted.addAll(perms);
         this.ordersCompleted.remove(start.id);
@@ -196,17 +199,77 @@ public class PathBuilder {
 //        }
 
         System.out.println("MOVES :" + flight.size());
+
         for (i = 0; i < flight.size() - 1; i++) {
             var dm = flight.get(i);
             var dm2 = flight.get(i + 1);
-//            System.out.println(dm);
+            System.out.println(dm);
 
-            if (!(dm.getTo().closeTo(dm2.getFrom()))) {
+            if (!(dm.getTo().equals(dm2.getFrom()))) {
+//                System.out.println(dm);
+//                System.out.println("UH OH!");
+//                System.out.println(dm2);
+            }
+        }
+    }
+
+    public void flightFromStopsMade() {
+        ArrayList<DroneMove> route = new ArrayList<>();
+        ArrayList<Stop> test = allStopsMade();
+
+        //add first journey on its own
+        var a = test.get(0);
+        var b = test.get(1);
+        route.addAll(myNavigation.getRoute(b.orderNo,a.coordinates,b.coordinates));
+        var latestC = route.get(route.size()-1).getTo();
+        route.add(new DroneMove(b.orderNo,latestC,latestC,LongLat.JUNK_ANGLE));
+
+
+        for (int i = 1; i < test.size()-1; i++) {
+             var x = route.get(route.size()-1).getTo();
+             var y = test.get(i+1);
+            route.addAll(myNavigation.getRoute(y.orderNo,x,y.coordinates));
+             latestC = route.get(route.size()-1).getTo();
+            route.add(new DroneMove(y.orderNo,latestC,latestC,LongLat.JUNK_ANGLE));
+        }
+        this.flightPath = route;
+
+
+
+
+        System.out.println("//");
+
+        System.out.println("MOVES :" + route.size());
+
+        int i;
+        for (i = 0; i < route.size() - 1; i++) {
+            var dm = route.get(i);
+            var dm2 = route.get(i + 1);
+               System.out.println(dm);
+
+            if (!(dm.getTo().equals(dm2.getFrom()))) {
                 System.out.println(dm);
-                System.err.println("UH OH!");
+                System.out.println("UH OH!");
                 System.out.println(dm2);
             }
         }
+
+    }
+
+    private ArrayList<Stop> allStopsMade() {
+        var jobs = this.getOrdersDelivered();
+        var test = new ArrayList<Stop>();
+
+        test.add(start); //calculate all stops made
+        for (var job : jobs) {
+            test.addAll(job.getAllStops());
+        }
+        test.add(end);
+
+        for (Stop stop : test) {
+            System.out.println(stop);
+        }
+        return test;
     }
 
 

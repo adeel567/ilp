@@ -26,12 +26,10 @@ public class Order {
         this.allStops = getStops();
         this.internalRoute = this.generateInternalRoute();
         this.deliveryCost = myMenu.getDeliveryCost(this.orderItems.toArray(new String[orderItems.size()]));
+       // this.printFlight();
     }
 
     private ArrayList<DroneMove> generateInternalRoute() {
-
-        ArrayList<DroneMove> route = new ArrayList<>();
-
         assert allStops.size() >=2 : "only one stop on entire journey";
 
         //if there are two pickups, then try arranging so that the last pickup is closest to destination.
@@ -48,19 +46,19 @@ public class Order {
             }
         }
 
+        ArrayList<DroneMove> route = new ArrayList<>();
+
         //add pickups to the route.
-        for (int i = 0; i < allStops.size()-1; i++) {
-            var stop = allStops.get(i);
-            var stopNext = allStops.get(i+1);
+        route.add(new DroneMove(this.orderNo, allStops.get(0).coordinates,
+                allStops.get(0).coordinates,LongLat.JUNK_ANGLE)); //hover at start
 
-            route.add(new DroneMove(this.orderNo, stop.coordinates,stop.coordinates,LongLat.JUNK_ANGLE)); //hover
-            route.addAll(myNavigation.getRoute(this.orderNo, stop.coordinates,stopNext.coordinates));
+        for (int i = 1; i < allStops.size(); i++) {
+            var latest = route.get(route.size()-1);
+            var stopNext = allStops.get(i);
+            route.addAll(myNavigation.getRoute(this.orderNo, latest.getTo(), stopNext.coordinates));
+            var last = route.get(route.size()-1);
+            route.add(new DroneMove(this.orderNo, last.getTo(), last.getTo(),LongLat.JUNK_ANGLE));
         }
-
-        //add the customer to the route.
-        var dest = allStops.get(allStops.size()-1);
-        route.add(new DroneMove(this.orderNo, dest.coordinates,dest.coordinates,LongLat.JUNK_ANGLE));
-
         return route;
     }
 
@@ -71,10 +69,10 @@ public class Order {
         ArrayList<Stop> allStops = new ArrayList<>();
         for (Shop shop : unorderedShops) {
             var coords = new What3Words(shop.location).coordinates;
-            var s = new Stop(shop.name,coords);
+            var s = new Stop(shop.name,coords,this.orderNo);
             allStops.add(s);
         }
-        allStops.add(new Stop(this.customer,this.destination));
+        allStops.add(new Stop(this.customer,this.destination,this.orderNo));
         return allStops;
     }
 
@@ -100,11 +98,15 @@ public class Order {
     }
 
     public LongLat getStart() {
-        return this.allStops.get(0).coordinates;
+        return this.internalRoute.get(0).getFrom();
     }
 
     public LongLat getDestination() {
-        return this.destination;
+        return this.internalRoute.get(internalRoute.size()-1).getTo();
+    }
+
+    public ArrayList<Stop> getAllStops() {
+        return this.allStops;
     }
 
     public int getMovesUsed() {
@@ -128,24 +130,26 @@ public class Order {
     }
 
     public void printFlight() {
-        System.out.println("/////// order");
-        DroneMove.getMovesAsFC(internalRoute);
-        for (Stop allStop : this.allStops) {
-            System.out.println(allStop.id);
-        }
+//        System.out.println("/////// order");
+//        DroneMove.getMovesAsFC(internalRoute);
+//        for (Stop allStop : this.allStops) {
+//            System.out.println(allStop.id);
+//        }
 
-        for (int i = 0; i < internalRoute.size(); i++) {
+        for (int i = 0; i < internalRoute.size()-1; i++) {
             var dm = internalRoute.get(i);
-          //  var dm2 = internalRoute.get(i+1);
-            System.out.println(dm);
+            var dm2 = internalRoute.get(i+1);
+           // System.out.println(dm);
 
-//            if (!(dm.getTo().closeTo(dm2.getFrom()))) {
-//                System.out.println(dm.toString());
-//                System.out.println("UH OH!");
-//                System.out.println(dm2.toString());
-//                }
+            if (!(dm.getTo().equals(dm2.getFrom()))) {
+                System.out.println(dm);
+               System.out.println("UH OH!");
+                System.out.println(dm2);
+                }
         }
-//            System.out.println(droneMove.toString());
+
+//        System.out.println(this.internalRoute.get(0));
+//        System.out.println(this.internalRoute.get(internalRoute.size()-1));
     }
 
 

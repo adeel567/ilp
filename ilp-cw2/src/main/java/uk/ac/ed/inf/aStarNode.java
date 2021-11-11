@@ -27,7 +27,11 @@ public class aStarNode extends LongLat implements Comparable<aStarNode> {
 
     }
 
-
+    public Double heuristic(LongLat target) {
+        var x = 0.75;
+        var y = 1.25;
+        return x*diagonalDistanceTo(target) + y*distanceTo(target);
+    }
 
     @Override
     public boolean equals(Object obj) {
