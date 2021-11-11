@@ -102,7 +102,7 @@ public class LongLat {
 //        var D2 = 1;
         var dx = Math.abs(this.longitude - destination.longitude);
         var dy = Math.abs(this.latitude - destination.latitude);
-        return 2*(dx + dy); //better for higher angles
+        return (dx + dy); //better for higher angles
 //        return D * (dx + dy) + (D2 - 2 * D) * Math.min(dx, dy);
     }
 

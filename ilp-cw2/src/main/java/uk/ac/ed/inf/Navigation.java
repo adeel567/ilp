@@ -8,7 +8,7 @@ import java.util.*;
 public class Navigation {
 
     private static final String SERVER_PATH_TO_NFZ = "buildings/no-fly-zones.geojson";
-    private static final int PATHFINDING_ANGLE_INCREMENT = 50;
+    private static final int PATHFINDING_ANGLE_INCREMENT = 30;
 
     private static Navigation instance = null;
 
@@ -72,7 +72,7 @@ public class Navigation {
         HashMap<LongLat,aStarNode> all = new HashMap<>();
 
         start.g = 0;
-        start.f = (start.g + start.DiagonalDistanceTo(target));
+        start.f = (start.g + 0.6*start.DiagonalDistanceTo(target) + 2*start.distanceTo(target));
         openList.add(start);
         all.put(start.asLongLat(),start);
 
@@ -90,11 +90,7 @@ public class Navigation {
                     double totalWeight = (n.g + LongLat.STRAIGHT_LINE_DISTANCE);
 
                     if (all.containsKey(m.asLongLat())) {
-//                        System.out.println(m);
-//                        System.out.println(all.get(m.asLongLat()));
                         m = all.get(m.asLongLat());
-//                        System.out.println(m);
-//                        System.out.println("--");
                     } else {
                         all.put(m.asLongLat(),m);
                     }
@@ -102,14 +98,14 @@ public class Navigation {
                     if (!openList.contains(m) && !closedList.contains(m)) {
                         m.parent = n;
                         m.g = totalWeight;
-                        m.f = (m.g + m.DiagonalDistanceTo(target));
+                        m.f = (m.g + 0.6*m.DiagonalDistanceTo(target) + 2*m.distanceTo(target));
                         openList.add(m);
 
                     } else {
                         if (totalWeight < m.g) {
                             m.parent = n;
                             m.g = totalWeight;
-                            m.f = (m.g + m.DiagonalDistanceTo(target));
+                            m.f = (m.g + 0.6*m.DiagonalDistanceTo(target) + 2*m.distanceTo(target));
 
                             if (closedList.contains(m)) {
                                 closedList.remove(m);

@@ -24,7 +24,10 @@ public class aStarNode extends LongLat implements Comparable<aStarNode> {
 
     public LongLat asLongLat() {
         return new LongLat(this.longitude, this.latitude);
+
     }
+
+
 
     @Override
     public boolean equals(Object obj) {
