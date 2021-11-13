@@ -292,7 +292,7 @@ public class AppTest {
     @Test
     public void testTSP0() {
         var config = Config.getInstance();
-        var x = new OrderHandler(5,1,2022);
+        var x = new OrderHandler(1,1,2022);
         x.fetchOrders();
         var y = new PathBuilder(x.getAllOrders());
         y.buildGraph();
@@ -332,7 +332,7 @@ public class AppTest {
 
     @Test
     public void testTSP3() {
-        var x = new OrderHandler(25,12,2022);
+        var x = new OrderHandler(28,9,2023);
         x.fetchOrders();
         var y = new PathBuilder(x.getAllOrders());
         y.buildGraph();
@@ -345,7 +345,7 @@ public class AppTest {
 
     @Test
     public void testTSP4() {
-        var x = new OrderHandler(31,12,2022);
+        var x = new OrderHandler(31,12,2023);
         x.fetchOrders();
         var y = new PathBuilder(x.getAllOrders());
         y.buildGraph();
@@ -359,7 +359,7 @@ public class AppTest {
 
     @Test
     public void testTSP5() {
-        var x = new OrderHandler(9,11,2023);
+        var x = new OrderHandler(8,11,2023);
         x.fetchOrders();
         var y = new PathBuilder(x.getAllOrders());
         y.buildGraph();

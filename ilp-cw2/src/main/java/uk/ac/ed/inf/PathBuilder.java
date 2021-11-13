@@ -51,13 +51,11 @@ public class PathBuilder {
                 if (!x.equals(y)) {
                     var ordX = todaysOrders.get(x);
                     var ordY = todaysOrders.get(y);
-                    var route = myNavigation.getRoute(ordY.getOrderNo(),
-                            ordX.getDestination(), ordY.getStart());
-                    route.addAll(ordY.getFlightPath());
-                    var totalDist = route.size();
+
+                    var totalDist = ordY.getTotalDistance() + ordX.getDestination().tspHeuristic(ordY.getStart());
                     var weight = totalDist/(double) ordY.getDeliveryCost();
 
-                    var edge = new tspEdge(weight, route, totalDist);
+                    var edge = new tspEdge(weight, null);
                     initialGraph.addEdge(x,y,edge);
                     initialGraph.setEdgeWeight(edge,weight);
                 }
@@ -68,13 +66,11 @@ public class PathBuilder {
         for (var y : initialGraph.vertexSet()) {
             if (!y.equals(start.getId())) {
                 var ordY = todaysOrders.get(y);
-                var route = myNavigation.getRoute(ordY.getOrderNo(), start.getCoordinates(),
-                        ordY.getStart());
-                route.addAll(ordY.getFlightPath());
-                var totalDist = route.size();
+
+                var totalDist = ordY.getTotalDistance() + start.getCoordinates().tspHeuristic(ordY.getStart());
                 var weight = totalDist / (double) ordY.getDeliveryCost();
 
-                var edge = new tspEdge(weight, route, totalDist);
+                var edge = new tspEdge(weight, null);
                 initialGraph.addEdge(start.getId(),y,edge);
                 initialGraph.setEdgeWeight(edge,weight);
             }
@@ -88,16 +84,11 @@ public class PathBuilder {
         for (var x : g.vertexSet()) {
             if (!(x.equals(end.getId()) || x.equals(start.getId())) ) {
                 var ordX = todaysOrders.get(x);
-                var route = myNavigation.getRoute(end.getId(), ordX.getDestination(),
-                        end.getCoordinates());
-                var totalDist = route.size();
 
-//                var totalDist = (int)((ordX.getDestination().distanceTo(end.coordinates)));
-
+                var totalDist = ordX.getDestination().tspHeuristic(end.getCoordinates());
                 var weight = totalDist / (double) ordX.getDeliveryCost();
 
-
-                var edge = new tspEdge(weight, route, totalDist);
+                var edge = new tspEdge(weight, null);
                 g.addEdge(x,end.getId(),edge);
                 g.setEdgeWeight(edge,weight);
             }
@@ -182,7 +173,7 @@ public class PathBuilder {
 
         this.flightPath = flight;
 
-        ///////
+        ///////statistics///////
         this.profitX = calcProfit(perms);
         this.profitLostX = calcProfitLost(removed);
         System.out.println("MONTEREY THING: " + (profitX/(double) (profitX+profitLostX)));
@@ -230,8 +221,7 @@ public class PathBuilder {
         var b = test.get(1);
         route.addAll(myNavigation.getRoute(b.getOrderNo(),a.getCoordinates(),b.getCoordinates()));
         var latestC = route.get(route.size()-1).getTo();
-        route.add(new DroneMove(b.getOrderNo(),latestC,latestC,LongLat.JUNK_ANGLE));
-
+        route.add(new DroneMove(b.getOrderNo(),latestC,latestC,LongLat.JUNK_ANGLE)); //hover after first stop
 
         for (int i = 1; i < test.size()-1; i++) {
              var x = route.get(route.size()-1).getTo();

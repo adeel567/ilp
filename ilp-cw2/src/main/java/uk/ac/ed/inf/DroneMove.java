@@ -5,6 +5,10 @@ import com.mapbox.geojson.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Stores every move the drone makes in a format
+ * as required for the database.
+ */
 public class DroneMove {
     private LongLat from;
     private LongLat to;
@@ -17,8 +21,8 @@ public class DroneMove {
         this.to = to;
         this.angle = angle;
 
-        if (!(from.distanceTo(to) <= LongLat.STRAIGHT_LINE_DISTANCE+0.000000000001)) {
-            System.err.println("DRONE MOVE ILLEGAL");
+        if ((from.distanceTo(to) > LongLat.STRAIGHT_LINE_DISTANCE+0.00001)) {
+            System.err.println("DRONE MOVE POTENTIALLY ILLEGAL");
             System.err.println(this.toString());
             System.err.println(from.distanceTo(to));
         }
@@ -53,9 +57,10 @@ public class DroneMove {
     }
 
     /**
-     *
-     * @param dms
-     * @return
+     * Takes a collection of DroneMoves and converts them into a
+     * collection of GEOJson Points.
+     * @param dms a collection of DroneMoves
+     * @return a collection of Points
      */
     private static ArrayList<Point> movesToPath(ArrayList<DroneMove> dms) {
         var lls = new ArrayList<Point>();
@@ -68,7 +73,7 @@ public class DroneMove {
                 lls.add(dm.getTo().toPoint());
             }
         }
-        System.out.println("points " + lls.size());
+        //System.out.println("points " + lls.size());
         return lls;
     }
 
@@ -78,7 +83,7 @@ public class DroneMove {
                 (Geometry) LineString.fromLngLats(path));
 
         var fc = FeatureCollection.fromFeature(feature);
-        System.out.println(fc.toJson());
+        //System.out.println(fc.toJson());
         return fc;
     }
 

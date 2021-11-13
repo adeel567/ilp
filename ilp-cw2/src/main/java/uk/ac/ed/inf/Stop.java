@@ -32,4 +32,12 @@ public class Stop {
         return orderNo;
     }
 
+    public LongLat getStart() {
+        return coordinates;
+    }
+
+    public LongLat getDestination() {
+        return coordinates;
+    }
+
 }
