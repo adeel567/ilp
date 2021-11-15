@@ -72,7 +72,7 @@ public class Navigation {
         HashMap<LongLat,aStarNode> all = new HashMap<>();
 
         start.g = 0;
-        start.f = (start.g + start.heuristic(target));
+        start.f = (start.g + start.flightHeuristic(target));
         openList.add(start);
         all.put(start.asLongLat(),start);
 
@@ -98,14 +98,14 @@ public class Navigation {
                     if (!openList.contains(m) && !closedList.contains(m)) {
                         m.parent = n;
                         m.g = totalWeight;
-                        m.f = (m.g + m.heuristic(target));
+                        m.f = (m.g + m.flightHeuristic(target));
                         openList.add(m);
 
                     } else {
                         if (totalWeight < m.g) {
                             m.parent = n;
                             m.g = totalWeight;
-                            m.f = (m.g + m.heuristic(target));
+                            m.f = (m.g + m.flightHeuristic(target));
 
                             if (closedList.contains(m)) {
                                 closedList.remove(m);

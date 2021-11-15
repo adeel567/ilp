@@ -16,6 +16,7 @@ public class OrderHandler {
 
     public OrderHandler(int dd, int mm, int yyyy) {
         this.date = LocalDate.of(yyyy,mm,dd);
+        System.out.println(date);
     }
 
     public void fetchOrders() {
@@ -38,7 +39,6 @@ public class OrderHandler {
             this.orders = ordersList;
         } catch (SQLException throwables) {
             System.err.println("Error in accessing database");
-            throwables.printStackTrace();
         }
         assert (this.orders.size() > 0) : "Warning: no orders available";
     }

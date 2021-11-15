@@ -5,10 +5,17 @@ package uk.ac.ed.inf;
  * Stores the location and identification information.
  */
 public class Stop {
-    private LongLat coordinates;
-    private String id;
-    private String orderNo;
 
+    private final LongLat coordinates;
+    private final String id;
+    private final String orderNo;
+
+    /**
+     * Create a new stop from its associated order, location and stop name
+     * @param id a friendly identifier for the stop, such as a shop name
+     * @param coordinates the coordinates of the stop, in LongLat format
+     * @param orderNo the order associated with this stop
+     */
     public Stop(String id, LongLat coordinates, String orderNo) {
         this.id = id;
         this.coordinates = coordinates;

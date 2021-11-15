@@ -1,9 +1,6 @@
 package uk.ac.ed.inf;
 
-import com.google.gson.Gson;
-import com.mapbox.geojson.GeoJson;
 import com.mapbox.geojson.Point;
-import com.mapbox.geojson.PointAsCoordinatesTypeAdapter;
 
 /**
  * Class for methods on movement, such as operating on coordinates.
@@ -130,14 +127,14 @@ public class LongLat {
         return String.format("%s,%s",this.longitude,this.latitude);
     }
 
-    public Double heuristic(LongLat target) {
+    public Double flightHeuristic(LongLat target) {
         var x = 0.75;
         var y = 1.25;
         return x*diagonalDistanceTo(target) + y*distanceTo(target);
     }
 
     public Double tspHeuristic(LongLat target) {
-        return heuristic(target);
+        return diagonalDistanceTo(target);
     }
 
 }

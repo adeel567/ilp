@@ -17,7 +17,7 @@ public class PathBuilder {
     private ArrayList<String> ordersCompleted;
     private ArrayList<DroneMove> flightPath;
 
-    private SimpleDirectedWeightedGraph<String,tspEdge> realGraph;
+    private SimpleDirectedWeightedGraph<String,tspEdge> originalGraph;
 
     private final Stop start;
     private final Stop end;
@@ -39,7 +39,6 @@ public class PathBuilder {
     }
 
     public void buildGraph(){
-
         var initialGraph = new SimpleDirectedWeightedGraph<String, tspEdge>(tspEdge.class);
 
         for (var orderNo : todaysOrders.keySet()) {
@@ -52,12 +51,10 @@ public class PathBuilder {
                     var ordX = todaysOrders.get(x);
                     var ordY = todaysOrders.get(y);
 
-                    var totalDist = ordY.getTotalDistance() + ordX.getDestination().tspHeuristic(ordY.getStart());
+                    var totalDist = ordY.getEstimatedDistance() + ordX.getDestination().tspHeuristic(ordY.getStart());
                     var weight = totalDist/(double) ordY.getDeliveryCost();
 
-                    var edge = new tspEdge(weight, null);
-                    initialGraph.addEdge(x,y,edge);
-                    initialGraph.setEdgeWeight(edge,weight);
+                    addEdge(initialGraph, x, y, weight);
                 }
             }
         }
@@ -67,16 +64,22 @@ public class PathBuilder {
             if (!y.equals(start.getId())) {
                 var ordY = todaysOrders.get(y);
 
-                var totalDist = ordY.getTotalDistance() + start.getCoordinates().tspHeuristic(ordY.getStart());
+                var totalDist = ordY.getEstimatedDistance() + start.getCoordinates().tspHeuristic(ordY.getStart());
                 var weight = totalDist / (double) ordY.getDeliveryCost();
 
-                var edge = new tspEdge(weight, null);
-                initialGraph.addEdge(start.getId(),y,edge);
-                initialGraph.setEdgeWeight(edge,weight);
+                addEdge(initialGraph, start.getId(), y, weight);
             }
         }
 
-        this.realGraph = initialGraph;
+        System.out.println("VERTEXES IN GRAPH " + initialGraph.vertexSet().size());
+        this.originalGraph = initialGraph;
+    }
+
+    private void addEdge(SimpleDirectedWeightedGraph<String, tspEdge> g, String x, String y, double weight) {
+        var edge = new tspEdge(weight);
+        g.addEdge(x, y, edge);
+        g.setEdgeWeight(edge, weight);
+
     }
 
     private void addEnd(SimpleDirectedWeightedGraph<String, tspEdge> g) {
@@ -85,12 +88,10 @@ public class PathBuilder {
             if (!(x.equals(end.getId()) || x.equals(start.getId())) ) {
                 var ordX = todaysOrders.get(x);
 
-                var totalDist = ordX.getDestination().tspHeuristic(end.getCoordinates());
-                var weight = totalDist / (double) ordX.getDeliveryCost();
+                var totalDist = ordX.getEstimatedDistance() + ordX.getDestination().tspHeuristic(end.getCoordinates());
+                var weight = totalDist/ (double) ordX.getDeliveryCost();
 
-                var edge = new tspEdge(weight, null);
-                g.addEdge(x,end.getId(),edge);
-                g.setEdgeWeight(edge,weight);
+                addEdge(g, x, end.getId(), weight);
             }
         }
     }
@@ -112,7 +113,7 @@ public class PathBuilder {
     public void doTour() {
         //copy of graph is needed to delete and add vertexes.
         //as no underlying modification is being made, a shallow copy is all that is needed.
-        var preserveGraph  = (SimpleDirectedWeightedGraph<String,tspEdge>) realGraph.clone();
+        var preserveGraph  = (SimpleDirectedWeightedGraph<String,tspEdge>) originalGraph.clone();
         var movesUsed = 0;
         ArrayList<String> perms = null;
         ArrayList<DroneMove> flight = null;
@@ -124,25 +125,14 @@ public class PathBuilder {
             movesUsed = 0;
             curr = start.getId();
             perms = new ArrayList<String>();
-            //perms.add(start.id);
-            //flight = new ArrayList<DroneMove>();
 
             while (hasNextEdge(whileGraph, curr)) { //keep doing if there are still edges to be visited
                 var nextEdge = greedyNextEdge(whileGraph, curr);
-              //  movesUsed += nextEdge.getMoves();
-              //  flight.addAll(nextEdge.getRoute());
                 var next = whileGraph.getEdgeTarget(nextEdge);
                 whileGraph.removeVertex(curr); //pop order as it's been visited
                 curr = next;
                 perms.add(next);
             }
-
-            addEnd(whileGraph); //final order to end location
-
-            var homeEdge = (whileGraph.getEdge(curr,end.getId()));
-          //  flight.addAll(homeEdge.getRoute());
-          //  movesUsed += homeEdge.getMoves();
-          //  perms.add(end.id);
 
             var allStopsMade = allStopsMade(perms);
             var currentFlightPath = flightFromStopsMade(allStopsMade);
@@ -156,11 +146,11 @@ public class PathBuilder {
                 System.out.println("CURRENT PERM: "+ perms);
                 System.out.println("CURRENT MOVES USED " + movesUsed);
 
-                var fixEnds  = (SimpleDirectedWeightedGraph<String,tspEdge>) preserveGraph.clone();
-                addEnd(fixEnds);
-                removed.add(worstEndVert(fixEnds));
+                var fixEnds  = (SimpleDirectedWeightedGraph<String,tspEdge>) preserveGraph.clone(); //reset
+                addEnd(fixEnds); //add edges to end location
+                removed.add(worstEndVert(fixEnds)); //get 'worst' and add to removed
 
-                preserveGraph.removeAllVertices(removed);
+                preserveGraph.removeAllVertices(removed); //setup for next iteration
             }
         }
 
@@ -212,6 +202,10 @@ public class PathBuilder {
         return lost;
     }
 
+    public void printStatistics() {
+
+    }
+
 
     public ArrayList<DroneMove> flightFromStopsMade(ArrayList<Stop> test) {
         ArrayList<DroneMove> route = new ArrayList<>();
@@ -248,7 +242,6 @@ public class PathBuilder {
         }
         return test;
     }
-
 
     public ArrayList<DroneMove> getFlightPath() {
         return this.flightPath;

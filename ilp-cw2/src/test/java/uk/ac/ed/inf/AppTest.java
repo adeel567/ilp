@@ -303,63 +303,63 @@ public class AppTest {
 
     }
 
-    @Test
-    public void testTSP() {
-        var config = Config.getInstance();
-        var x = new OrderHandler(29,9,2023);
-        x.fetchOrders();
-        var y = new PathBuilder(x.getAllOrders());
-        y.buildGraph();
-        y.doTour();
-        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
-
-    }
-
-    @Test
-    public void testTSP2() {
-        var x = new OrderHandler(31,12,2023);
-        x.fetchOrders();
-        var y = new PathBuilder(x.getAllOrders());
-        y.buildGraph();
-        y.doTour();
-        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
-
-    }
-
-    @Test
-    public void testTSP3() {
-        var x = new OrderHandler(28,9,2023);
-        x.fetchOrders();
-        var y = new PathBuilder(x.getAllOrders());
-        y.buildGraph();
-        y.doTour();
-        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
-
-    }
-
-    @Test
-    public void testTSP4() {
-        var x = new OrderHandler(31,12,2023);
-        x.fetchOrders();
-        var y = new PathBuilder(x.getAllOrders());
-        y.buildGraph();
-        y.doTour();
-        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
-
-    }
-
-
+//    @Test
+//    public void testTSP() {
+//        var config = Config.getInstance();
+//        var x = new OrderHandler(29,9,2023);
+//        x.fetchOrders();
+//        var y = new PathBuilder(x.getAllOrders());
+//        y.buildGraph();
+//        y.doTour();
+//        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+//        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+//        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+//
+//    }
+//
+//    @Test
+//    public void testTSP2() {
+//        var x = new OrderHandler(31,12,2023);
+//        x.fetchOrders();
+//        var y = new PathBuilder(x.getAllOrders());
+//        y.buildGraph();
+//        y.doTour();
+//        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+//        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+//        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+//
+//    }
+//
+//    @Test
+//    public void testTSP3() {
+//        var x = new OrderHandler(28,9,2023);
+//        x.fetchOrders();
+//        var y = new PathBuilder(x.getAllOrders());
+//        y.buildGraph();
+//        y.doTour();
+//        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+//        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+//        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+//
+//    }
+//
+//    @Test
+//    public void testTSP4() {
+//        var x = new OrderHandler(31,12,2023);
+//        x.fetchOrders();
+//        var y = new PathBuilder(x.getAllOrders());
+//        y.buildGraph();
+//        y.doTour();
+//        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+//        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+//        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+//
+//    }
+//
+//
     @Test
     public void testTSP5() {
-        var x = new OrderHandler(8,11,2023);
+        var x = new OrderHandler(24,10,2023);
         x.fetchOrders();
         var y = new PathBuilder(x.getAllOrders());
         y.buildGraph();
@@ -369,15 +369,5 @@ public class AppTest {
         DatabaseIO.writeFilepathDatabase(y.getFlightPath());
     }
 
-    @Test
-    public void testYeet() {
-        var x = new aStarNode(0,0);
 
-        var y = new aStarNode(0,0);
-        var a = new PriorityQueue<aStarNode>();
-        a.add(x);
-        System.out.println(a.contains(y));
-        a.remove(y);
-        a.add(y);
-    }
 }

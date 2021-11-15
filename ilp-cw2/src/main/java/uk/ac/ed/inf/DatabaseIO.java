@@ -39,7 +39,7 @@ public class DatabaseIO {
             }
 
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            System.err.println("Failed to write to database, table deliveries");
         }
     }
 
@@ -76,7 +76,7 @@ public class DatabaseIO {
             }
 
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            System.err.println("Failed to write to database, table flightpath");
         }
     }
 }

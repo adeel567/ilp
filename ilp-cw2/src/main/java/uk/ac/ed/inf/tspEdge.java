@@ -8,11 +8,9 @@ import java.util.List;
 public class tspEdge implements Comparable<tspEdge> {
 
     private double weight;
-    private List<DroneMove> route;
 
-    public tspEdge(double weight, ArrayList<DroneMove> route) {
+    public tspEdge(double weight) {
         this.weight = weight;
-        this.route = route;
     }
 
     public double getWeight() {
@@ -22,15 +20,6 @@ public class tspEdge implements Comparable<tspEdge> {
     public void setWeight(double weight) {
         this.weight = weight;
     }
-
-    public List<DroneMove> getRoute() {
-        return route;
-    }
-
-    public void setRoute(List<DroneMove> route) {
-        this.route = route;
-    }
-
 
     @Override
     public int compareTo(tspEdge o) { //compare on weight value

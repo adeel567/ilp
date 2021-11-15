@@ -11,23 +11,22 @@ public class Order {
     private LongLat destination;
     private String customer;
     private String What3Words;
-    private double totalDistance;
+    private double estimatedDistance;
 
     private final Menus myMenu = Menus.getInstance();
-    private final Navigation myNavigation = Navigation.getInstance();
 
     public Order(String orderNo, String customer, String deliverTo) {
         this.customer = customer;
         this.orderNo = orderNo;
         this.What3Words = deliverTo;
         this.destination = new What3Words(deliverTo).getCoordinates();
-        this.orderItems = fetchOrderItems();
+        this.orderItems = fetchOrderItems(orderNo);
         this.allStops = getStops();
-        this.totalDistance = this.getInternalDistance();
+        this.estimatedDistance = calcEstimatedDistance();
         this.deliveryCost = myMenu.getDeliveryCost(this.orderItems.toArray(new String[orderItems.size()]));
     }
 
-    private Double getInternalDistance() {
+    private Double calcEstimatedDistance() {
         assert allStops.size() >=2 : "only one stop on entire journey";
 
         //if there are two pickups, then try arranging so that the last pickup is closest to destination.
@@ -67,12 +66,12 @@ public class Order {
         return allStops;
     }
 
-    private ArrayList<String> fetchOrderItems(){
+    private ArrayList<String> fetchOrderItems(String orderno){
         try {
             Connection conn = DriverManager.getConnection(DatabaseIO.jdbcString);
             final String itemsQuery = "select * from orderDetails where orderNo=(?)";
             PreparedStatement psItemsQuery = conn.prepareStatement(itemsQuery);
-            psItemsQuery.setString(1,this.orderNo);
+            psItemsQuery.setString(1,orderNo);
 
             ArrayList<String> itemsList = new ArrayList<>();
             ResultSet rs = psItemsQuery.executeQuery();
@@ -83,7 +82,6 @@ public class Order {
             return itemsList;
         } catch (SQLException throwables) {
             System.err.println("ERROR Reading from database.");
-            throwables.printStackTrace();
         }
         return null;
     }
@@ -100,8 +98,8 @@ public class Order {
         return this.allStops;
     }
 
-    public double getTotalDistance() {
-        return this.totalDistance;
+    public double getEstimatedDistance() {
+        return this.estimatedDistance;
     }
 
     public int getDeliveryCost() {
