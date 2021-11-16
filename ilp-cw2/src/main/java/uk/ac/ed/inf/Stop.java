@@ -22,6 +22,10 @@ public class Stop {
         this.orderNo = orderNo;
     }
 
+    /**
+     * Override to string to output what is needed for debugging.
+     * @return String value of a Stop.
+     */
     @Override
     public String toString(){
         return "id: " + id + " coors: " + coordinates + " orderNo: " +  orderNo;
@@ -37,14 +41,6 @@ public class Stop {
 
     public String getOrderNo() {
         return orderNo;
-    }
-
-    public LongLat getStart() {
-        return coordinates;
-    }
-
-    public LongLat getDestination() {
-        return coordinates;
     }
 
 }

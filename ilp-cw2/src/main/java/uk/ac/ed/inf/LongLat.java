@@ -9,20 +9,20 @@ public class LongLat {
 
 
     //four corners of the confinement area as constants
-    public static final double CONFINEMENT_LATITUDE_NORTH = 55.946233;
-    public static final double CONFINEMENT_LATITUDE_SOUTH = 55.942617;
-    public static final double CONFINEMENT_LONGITUDE_WEST = -3.192473;
-    public static final double CONFINEMENT_LONGITUDE_EAST = -3.184319;
+    private static final double CONFINEMENT_LATITUDE_NORTH = 55.946233;
+    private static final double CONFINEMENT_LATITUDE_SOUTH = 55.942617;
+    private static final double CONFINEMENT_LONGITUDE_WEST = -3.192473;
+    private static final double CONFINEMENT_LONGITUDE_EAST = -3.184319;
 
     //constants for different distances required
-    public static final double CLOSE_TO_DISTANCE = 0.00015;
-    public static final double STRAIGHT_LINE_DISTANCE = 0.00015;
+    protected static final double CLOSE_TO_DISTANCE = 0.00015;
+    protected static final double STRAIGHT_LINE_DISTANCE = 0.00015;
 
     //constants for angles
-    public static final int MIN_ANGLE = 0;
-    public static final int MAX_ANGLE = 350;
-    public static final int JUNK_ANGLE = -999;
-    public static final int ANGLE_INTERVAL = 10;
+    protected static final int MIN_ANGLE = 0;
+    protected static final int MAX_ANGLE = 350;
+    protected static final int JUNK_ANGLE = -999;
+    protected static final int ANGLE_INTERVAL = 10;
 
 
     /** Stores the longitude of current location */
@@ -51,7 +51,7 @@ public class LongLat {
     }
 
     /**
-     * Calculates the distance between self and a given location.
+     * Calculates the distance between self and a given location using Euclidean Distance.
      * @param destination the 'to' location for which distance is to be calculated.
      * @return the magnitude of the distance in degrees.
      */
@@ -89,10 +89,19 @@ public class LongLat {
         throw new IllegalArgumentException("Angle given is out of bounds.");
     }
 
+    /**
+     * Converts LongLat to a Point
+     * @return this LongLat as a Point
+     */
     public Point toPoint() {
         return Point.fromLngLat(this.longitude,this.latitude);
     }
 
+    /**
+     * Calculates the distance between self and a given location using Manhattan Distance.
+     * @param destination the 'to' location for which distance is to be calculated.
+     * @return the magnitude of the distance in degrees.
+     */
     public double diagonalDistanceTo(LongLat destination) {
         var dx = Math.abs(this.longitude - destination.longitude);
         var dy = Math.abs(this.latitude - destination.latitude);
@@ -100,6 +109,31 @@ public class LongLat {
 
     }
 
+    /**
+     * A heuristic for distances using weighted Euclidean and Manhattan distances.
+     * @param destination the 'to' location for which the heuristic is to be calculated.
+     * @return the heuristic calculated.
+     */
+    public Double flightHeuristic(LongLat destination) {
+        var x = 0.75;
+        var y = 1.25;
+        return x*diagonalDistanceTo(destination) + y*distanceTo(destination);
+    }
+
+    /**
+     * Defines which method of distance will be used when comparing two stops on TSP.
+     * @param target the 'to' location for which the heuristic is to be calculated.
+     * @return the heuristic calculated.
+     */
+    public Double tspHeuristic(LongLat target) {
+        return diagonalDistanceTo(target);
+    }
+
+    /**
+     * Override the 'equals' method so that two LongLats with the same coordinates are equal.
+     * @param obj LongLat to compare against
+     * @return boolean if they are equal on coordinates.
+     */
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -125,16 +159,6 @@ public class LongLat {
     @Override
     public String toString() {
         return String.format("%s,%s",this.longitude,this.latitude);
-    }
-
-    public Double flightHeuristic(LongLat target) {
-        var x = 0.75;
-        var y = 1.25;
-        return x*diagonalDistanceTo(target) + y*distanceTo(target);
-    }
-
-    public Double tspHeuristic(LongLat target) {
-        return diagonalDistanceTo(target);
     }
 
 }

@@ -1,10 +1,8 @@
 package uk.ac.ed.inf;
 
-import com.mapbox.geojson.Point;
-
-import java.util.ArrayList;
-import java.util.List;
-
+/**
+ * Represents the edges between orders on TSP graph
+ */
 public class tspEdge implements Comparable<tspEdge> {
 
     private double weight;
@@ -21,6 +19,11 @@ public class tspEdge implements Comparable<tspEdge> {
         this.weight = weight;
     }
 
+    /**
+     * Compare two edges on their weight
+     * @param o other edge to compare against
+     * @return comparison of the weights
+     */
     @Override
     public int compareTo(tspEdge o) { //compare on weight value
         return Double.compare(this.weight, o.weight);

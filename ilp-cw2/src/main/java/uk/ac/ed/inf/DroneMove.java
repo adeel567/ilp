@@ -15,22 +15,28 @@ public class DroneMove {
     private int angle;
     private String id;
 
+    /**
+     * Create DroneMove from values as would be required in the output.
+     * @param id order being delivered
+     * @param from LongLat of from location.
+     * @param to LongLat of to location.
+     * @param angle angle taken to reach to location.
+     */
     public DroneMove(String id, LongLat from, LongLat to, int angle) {
         this.id = id;
         this.from = from;
         this.to = to;
         this.angle = angle;
 
-        if ((from.distanceTo(to) > LongLat.STRAIGHT_LINE_DISTANCE+0.00001)) {
-            System.err.println("DRONE MOVE POTENTIALLY ILLEGAL");
-            System.err.println(this.toString());
-            System.err.println(from.distanceTo(to));
-        }
-
         if(angle == LongLat.JUNK_ANGLE && (!(from.equals(to)))) {
             System.err.println("DRONE HOVER ILLEGAL");
-            System.err.println(this.toString());
+            System.err.println(this);
 
+        } else if ((from.distanceTo(to) > LongLat.STRAIGHT_LINE_DISTANCE+1E-12) ||
+            (from.distanceTo(to) < LongLat.STRAIGHT_LINE_DISTANCE-1E-12) && angle!=LongLat.JUNK_ANGLE) {
+            System.err.println("DRONE MOVE POTENTIALLY ILLEGAL");
+            System.err.println(this);
+            System.err.println(from.distanceTo(to));
         }
 
     }
@@ -73,7 +79,6 @@ public class DroneMove {
                 lls.add(dm.getTo().toPoint());
             }
         }
-        //System.out.println("points " + lls.size());
         return lls;
     }
 

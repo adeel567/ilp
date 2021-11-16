@@ -2,6 +2,10 @@ package uk.ac.ed.inf;
 
 public class App {
 
+    /**
+     * Runs the entire program by taking in arguments
+     * @param args arguments as specified: day, month, year, web_port, db_port
+     */
     public static void main(String[] args){
         int day = Integer.parseInt(args[0]);
         int month = Integer.parseInt(args[1]);
@@ -17,9 +21,11 @@ public class App {
 
         OrderHandler orderHandler = new OrderHandler(day,month,year);
         orderHandler.fetchOrders();
-        PathBuilder pathBuilder = new PathBuilder(orderHandler.getAllOrders());
+
+        PathBuilder pathBuilder = new PathBuilder(orderHandler);
         pathBuilder.buildGraph();
         pathBuilder.doTour();
+
         FileIO.writeGEOJson(pathBuilder.getFlightPath(), orderHandler.getDate());
         DatabaseIO.writeDeliveriesTable(pathBuilder.getOrdersDelivered());
         DatabaseIO.writeFilepathDatabase(pathBuilder.getFlightPath());

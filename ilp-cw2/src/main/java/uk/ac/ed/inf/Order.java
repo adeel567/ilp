@@ -26,6 +26,55 @@ public class Order {
         this.deliveryCost = myMenu.getDeliveryCost(this.orderItems.toArray(new String[orderItems.size()]));
     }
 
+    /**
+     * Communicates with database to retrieve information for the order using the order number.
+     * @param orderNo of order to retrieve.
+     * @return a collection of the items in the order.
+     */
+    private ArrayList<String> fetchOrderItems(String orderNo){
+        try {
+            Connection conn = DriverManager.getConnection(DatabaseIO.jdbcString);
+            final String itemsQuery = "select * from orderDetails where orderNo=(?)";
+            PreparedStatement psItemsQuery = conn.prepareStatement(itemsQuery);
+            psItemsQuery.setString(1,orderNo);
+
+            ArrayList<String> itemsList = new ArrayList<>();
+            ResultSet rs = psItemsQuery.executeQuery();
+            while(rs.next()) {
+                String item = rs.getString("item");
+                itemsList.add(item);
+            }
+            return itemsList;
+        } catch (SQLException throwables) {
+            System.err.println("ERROR Reading from database.");
+        }
+        return null;
+    }
+
+    /**
+     * Obtains all the stops that need to be visited for this order, including the destination.
+     * @return a collection of all the stops to be visited.
+     */
+    private ArrayList<Stop> getStops() {
+        //use Menus class to gather all the shops
+        var unorderedShops =
+                myMenu.getDeliveryShops(this.orderItems.toArray(new String[orderItems.size()]));
+
+        ArrayList<Stop> allStops = new ArrayList<>();
+        for (Shop shop : unorderedShops) {
+            var coords = new What3Words(shop.location).getCoordinates();
+            var s = new Stop(shop.name,coords,this.orderNo);
+            allStops.add(s);
+        }
+        allStops.add(new Stop(this.customer,this.destination,this.orderNo));
+        return allStops;
+    }
+
+
+    /**
+     * Estimates the distance covered by visiting all the pickups and destination.
+     * @return double of the distance that is estimated to be covered.
+     */
     private Double calcEstimatedDistance() {
         assert allStops.size() >=2 : "only one stop on entire journey";
 
@@ -50,40 +99,6 @@ public class Order {
             dist += x.getCoordinates().tspHeuristic(y.getCoordinates());
         }
         return dist;
-    }
-
-    private ArrayList<Stop> getStops() {
-        var unorderedShops =
-                myMenu.getDeliveryStops(this.orderItems.toArray(new String[orderItems.size()]));
-
-        ArrayList<Stop> allStops = new ArrayList<>();
-        for (Shop shop : unorderedShops) {
-            var coords = new What3Words(shop.location).getCoordinates();
-            var s = new Stop(shop.name,coords,this.orderNo);
-            allStops.add(s);
-        }
-        allStops.add(new Stop(this.customer,this.destination,this.orderNo));
-        return allStops;
-    }
-
-    private ArrayList<String> fetchOrderItems(String orderno){
-        try {
-            Connection conn = DriverManager.getConnection(DatabaseIO.jdbcString);
-            final String itemsQuery = "select * from orderDetails where orderNo=(?)";
-            PreparedStatement psItemsQuery = conn.prepareStatement(itemsQuery);
-            psItemsQuery.setString(1,orderNo);
-
-            ArrayList<String> itemsList = new ArrayList<>();
-            ResultSet rs = psItemsQuery.executeQuery();
-            while(rs.next()) {
-                String item = rs.getString("item");
-                itemsList.add(item);
-            }
-            return itemsList;
-        } catch (SQLException throwables) {
-            System.err.println("ERROR Reading from database.");
-        }
-        return null;
     }
 
     public LongLat getStart() {
