@@ -5,18 +5,18 @@ import java.util.ArrayList;
 /**
  * An expansion of LongLat for use in the A* pathfinding.
  */
-public class aStarNode extends LongLat implements Comparable<aStarNode> {
+public class PathfindingNode extends LongLat implements Comparable<PathfindingNode> {
     protected double f = Double.MAX_VALUE;
     protected double g = Double.MAX_VALUE;
     protected int angle;
-    protected aStarNode parent;
+    protected PathfindingNode parent;
 
     /**
      * Create using longitude and latitude, like its parent, LongLat.
      * @param longitude of location
      * @param latitude of location.
      */
-    public aStarNode(double longitude, double latitude) {
+    public PathfindingNode(double longitude, double latitude) {
         super(longitude, latitude);
     }
 
@@ -26,8 +26,8 @@ public class aStarNode extends LongLat implements Comparable<aStarNode> {
      * @param inc of how far the next neighbour should be in degrees.
      * @return a collection of neighbours.
      */
-    public ArrayList<aStarNode> generateNeighbours(int inc) {
-        ArrayList<aStarNode> neighbours = new ArrayList<>();
+    public ArrayList<PathfindingNode> generateNeighbours(int inc) {
+        ArrayList<PathfindingNode> neighbours = new ArrayList<>();
         for (int i = LongLat.MIN_ANGLE; i<= LongLat.MAX_ANGLE; i+=inc) {
             var x = this.nextPosition(i);
             x.angle = i;
@@ -62,7 +62,7 @@ public class aStarNode extends LongLat implements Comparable<aStarNode> {
             return false;
         }
 
-        final aStarNode other = (aStarNode) obj;
+        final PathfindingNode other = (PathfindingNode) obj;
         return this.longitude == other.longitude && this.latitude == other.latitude
                 && this.f == other.f && this.g == other.g;
     }
@@ -73,7 +73,7 @@ public class aStarNode extends LongLat implements Comparable<aStarNode> {
      * @return comparison of the f weights.
      */
     @Override
-    public int compareTo(aStarNode o) {
+    public int compareTo(PathfindingNode o) {
         return Double.compare(this.f, o.f);    }
 
     /**
@@ -82,9 +82,9 @@ public class aStarNode extends LongLat implements Comparable<aStarNode> {
      * @return node of new location.
      */
     @Override
-    public aStarNode nextPosition(int angle) {
+    public PathfindingNode nextPosition(int angle) {
         LongLat x = super.nextPosition(angle);
-        return new aStarNode(x.longitude, x.latitude);
+        return new PathfindingNode(x.longitude, x.latitude);
     }
 
     @Override

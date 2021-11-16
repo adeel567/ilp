@@ -82,7 +82,11 @@ public class DroneMove {
         return lls;
     }
 
-
+    /**
+     * Takes a collection of Points and turns them into a FeatureCollection
+     * @param path a collection of Points
+     * @return a FeatureCollection of the given Points
+     */
     private static FeatureCollection getRouteAsFC(List<Point> path) {
         var feature = Feature.fromGeometry(
                 (Geometry) LineString.fromLngLats(path));
@@ -92,6 +96,11 @@ public class DroneMove {
         return fc;
     }
 
+    /**
+     * Takes a collection of DroneMoves and turns them into a FeatureCollection.
+     * @param dms a collection of DroneMoves.
+     * @return a FeatureCollection of the giben DroneMoves.
+     */
     public static FeatureCollection getMovesAsFC(ArrayList<DroneMove> dms) {
         var x = movesToPath(dms);
         return getRouteAsFC(x);

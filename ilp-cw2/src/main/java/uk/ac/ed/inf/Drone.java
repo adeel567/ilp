@@ -14,7 +14,6 @@ public class Drone {
 
     private final NoFlyZones myNoFlyZones = NoFlyZones.getInstance();
 
-    private static final int PATHFINDING_ANGLE_INCREMENT = 30;
 
     /**
      * Create a drone by providing an initial location in LongLat form.
@@ -40,7 +39,12 @@ public class Drone {
      * @param stop to fly to.
      */
     public void flyToStop(Stop stop) {
-        flyTo(currentLocation,stop.getCoordinates());
+        if (currentLocation.closeTo(stop.getCoordinates())) {
+            doHover(); //if close to dest. then just hover for one move.
+        } else {
+            var points = Pathfinding.routeTo(currentLocation, stop.getCoordinates());
+            this.commitMoves(points);
+        }
 
         if (!currentLocation.closeTo(stop.getCoordinates())) {
             System.err.println("LOCATION NOT CLOSE TO" + stop.getCoordinates());
@@ -72,104 +76,11 @@ public class Drone {
     }
 
     /**
-     * Uses the A* algorithm to compute a route from a start node to a destination node.
-     * Finishes if final location is 'close-to' the destination.
-     * The amount of available moves per iteration can be controlled via the angle increment constant.
-     * Algorithm based on: https://www.baeldung.com/java-a-star-pathfinding
-     * @param start location to begin at
-     * @param target location to end 'close-to'
-     * @return the final node, from which the route can be derived.
-     */
-    private aStarNode doAStar(aStarNode start, aStarNode target) {
-        PriorityQueue<aStarNode> openList = new PriorityQueue<>();
-        PriorityQueue<aStarNode> closedList = new PriorityQueue<>();
-        HashMap<LongLat,aStarNode> all = new HashMap<>();
-
-        start.g = 0;
-        start.f = (start.g + start.flightHeuristic(target));
-        openList.add(start);
-        all.put(start.asLongLat(),start);
-
-        while (!openList.isEmpty()) {
-            aStarNode n = openList.peek();
-            if (n.closeTo(target)) {
-                return n;
-            }
-
-            for (aStarNode m : n.generateNeighbours(PATHFINDING_ANGLE_INCREMENT)) {
-                var a = m.toPoint();
-                var b = n.toPoint();
-
-                if (!myNoFlyZones.doesIntersectNoFly(a, b) && m.isConfined()) {
-                    double totalWeight = (n.g + LongLat.STRAIGHT_LINE_DISTANCE);
-
-                    if (all.containsKey(m.asLongLat())) {
-                        m = all.get(m.asLongLat());
-                    } else {
-                        all.put(m.asLongLat(),m);
-                    }
-
-                    if (!openList.contains(m) && !closedList.contains(m)) {
-                        m.parent = n;
-                        m.g = totalWeight;
-                        m.f = (m.g + m.flightHeuristic(target));
-                        openList.add(m);
-
-                    } else {
-                        if (totalWeight < m.g) {
-                            m.parent = n;
-                            m.g = totalWeight;
-                            m.f = (m.g + m.flightHeuristic(target));
-
-                            if (closedList.contains(m)) {
-                                closedList.remove(m);
-                                openList.add(m);
-                            }
-                        }
-                    }
-                }
-            }
-            openList.remove(n);
-            closedList.add(n);
-        }
-        System.err.println("PATH COULD NOT BE FOUND");
-        return null;
-    }
-
-    /**
-     * Moves the drone from a start point to the end by calculating the best route it can.
-     * Logs the route taken in the flightpath
-     * @param startLL location to start at
-     * @param endLL location to end 'close-to'
-     */
-    private void flyTo(LongLat startLL, LongLat endLL) {
-        if (startLL.closeTo(endLL)) {
-            doHover();
-        } else {
-
-            aStarNode start = new aStarNode(startLL.longitude, startLL.latitude);
-            aStarNode end = new aStarNode(endLL.longitude, endLL.latitude);
-
-            aStarNode n = this.doAStar(start, end);
-
-            List<aStarNode> path = new ArrayList<>();
-            while (n.parent != null) {
-                path.add(n);
-                n = n.parent;
-            }
-            path.add(n);
-            Collections.reverse(path);
-
-            commitMoves(path);
-        }
-    }
-
-    /**
      * Takes the collection of nodes returned by A* and converts into usable DroneMoves
      * which are added to the FlightPath. Checks for any possible issues.
      * @param path collection of A* nodes returned by A* algorithm.
      */
-    private void commitMoves(List<aStarNode> path) {
+    private void commitMoves(List<PathfindingNode> path) {
         for (int i = 0; i < path.size() - 1; i++) {
             var x = path.get(i).asLongLat();
             var y = path.get(i + 1).asLongLat();
@@ -177,16 +88,17 @@ public class Drone {
 
             var expected = x.nextPosition(ang);
 
+            //check for any irregularities
             var bad = (Math.abs(x.distanceTo(y) - x.distanceTo(expected))) >1E-12;
             if (bad) {
-                System.out.println("Pathfinding move was illegal");
-                System.out.println("from " + x);
-                System.out.println("to: " + y);
-                System.out.println("ang: " + ang);
-                System.out.println("expected y" + expected);
-                System.out.println(x.distanceTo(y));
-                System.out.println(x.distanceTo(expected));
-                System.out.println(x.distanceTo(y) - x.distanceTo(expected));
+                System.err.println("Pathfinding move was illegal");
+                System.err.println("from " + x);
+                System.err.println("to: " + y);
+                System.err.println("ang: " + ang);
+                System.err.println("expected y" + expected);
+                System.err.println(x.distanceTo(y));
+                System.err.println(x.distanceTo(expected));
+                System.err.println(x.distanceTo(y) - x.distanceTo(expected));
             }
 
             this.doMove(y,ang);
@@ -212,7 +124,7 @@ public class Drone {
     }
 
     public ArrayList<DroneMove> getFlightPath() {
-        validateFlightPath();
+        validateFlightPath(); //do a sanity check before returning.
         return this.flightPath;
     }
 

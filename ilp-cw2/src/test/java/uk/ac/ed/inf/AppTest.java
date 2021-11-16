@@ -2,6 +2,7 @@ package uk.ac.ed.inf;
 
 import org.junit.Test;
 
+
 import java.time.LocalDate;
 import java.util.stream.Collectors;
 
@@ -207,8 +208,8 @@ public class AppTest {
 
     @Test
     public void testRoute2() {
-        aStarNode end = new aStarNode(-3.191065, 55.945626);
-        aStarNode start = new aStarNode(-3.186103, 55.944656);
+        PathfindingNode end = new PathfindingNode(-3.191065, 55.945626);
+        PathfindingNode start = new PathfindingNode(-3.186103, 55.944656);
         var stop = new Stop(null,end,null);
         Drone drone = new Drone(start);
         drone.flyToStop(stop);
@@ -218,8 +219,8 @@ public class AppTest {
 
     @Test
     public void testRoute3() {
-        aStarNode start = new aStarNode(-3.191065, 55.945626);
-        aStarNode end = new aStarNode(-3.187837, 55.943497);
+        PathfindingNode start = new PathfindingNode(-3.191065, 55.945626);
+        PathfindingNode end = new PathfindingNode(-3.187837, 55.943497);
         var stop = new Stop(null,end,null);
         Drone drone = new Drone(start);
         drone.flyToStop(stop);
@@ -229,8 +230,8 @@ public class AppTest {
 
     @Test
     public void testRoute4() {
-        aStarNode start = new aStarNode(-3.191594,55.943658);
-        aStarNode end = new aStarNode(-3.186199,55.945734);
+        PathfindingNode start = new PathfindingNode(-3.191594,55.943658);
+        PathfindingNode end = new PathfindingNode(-3.186199,55.945734);
         var stop = new Stop(null,end,null);
         Drone drone = new Drone(start);
         drone.flyToStop(stop);
@@ -240,8 +241,8 @@ public class AppTest {
 
     @Test
     public void testRoute5() {
-        aStarNode start = new aStarNode(-3.191065, 55.945626);
-        aStarNode end = new aStarNode(-3.191065, 55.945726);
+        PathfindingNode start = new PathfindingNode(-3.191065, 55.945626);
+        PathfindingNode end = new PathfindingNode(-3.191065, 55.945726);
         var stop = new Stop(null,end,null);
         Drone drone = new Drone(start);
         drone.flyToStop(stop);
@@ -394,23 +395,41 @@ public class AppTest {
 //        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
 //        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
 //    }
-////
-//    @Test
-//    public void testAllOrders() {
-//        var start  = LocalDate.of(2022,1,1);
-//        var end = LocalDate.of(2023,12,31);
-//        var dates = start.datesUntil(end).collect(Collectors.toList());
-//
-//        for (LocalDate date : dates) {
-//            var x = new OrderHandler(date.getDayOfMonth(),date.getMonthValue(),date.getYear());
-//            x.fetchOrders();
-//            var y = new PathBuilder(x);
-//            y.buildGraph();
-//            y.doTour();
-//            FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-//            DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-//            DatabaseIO.writeFilepathDatabase(y.getFlightPath());
-//        }
-//    }
+
+    @Test
+    public void testA2022Orders() {
+        var start  = LocalDate.of(2022,1,1);
+        var end = LocalDate.of(2022,12,31);
+        var dates = start.datesUntil(end).collect(Collectors.toList());
+
+        for (LocalDate date : dates) {
+            var x = new OrderHandler(date.getDayOfMonth(),date.getMonthValue(),date.getYear());
+            x.fetchOrders();
+            var y = new PathBuilder(x);
+            y.buildGraph();
+            y.doTour();
+            FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+            DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+            DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+        }
+    }
+
+    @Test
+    public void testAllOrders() {
+        var start  = LocalDate.of(2022,1,1);
+        var end = LocalDate.of(2023,12,31);
+        var dates = start.datesUntil(end).collect(Collectors.toList());
+
+        for (LocalDate date : dates) {
+            var x = new OrderHandler(date.getDayOfMonth(),date.getMonthValue(),date.getYear());
+            x.fetchOrders();
+            var y = new PathBuilder(x);
+            y.buildGraph();
+            y.doTour();
+            FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+            DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+            DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+        }
+    }
 
 }
