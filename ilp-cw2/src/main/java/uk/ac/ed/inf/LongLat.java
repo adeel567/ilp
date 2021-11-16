@@ -14,11 +14,11 @@ public class LongLat {
     private static final double CONFINEMENT_LONGITUDE_WEST = -3.192473;
     private static final double CONFINEMENT_LONGITUDE_EAST = -3.184319;
 
-    //constants for different distances required
+    //constants for different distances required - used elsewhere so set as protected
     protected static final double CLOSE_TO_DISTANCE = 0.00015;
     protected static final double STRAIGHT_LINE_DISTANCE = 0.00015;
 
-    //constants for angles
+    //constants for angles - used elsewhere so set as protected
     protected static final int MIN_ANGLE = 0;
     protected static final int MAX_ANGLE = 350;
     protected static final int JUNK_ANGLE = -999;

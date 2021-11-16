@@ -282,53 +282,48 @@ public class AppTest {
 //        x.fetchOrders();
 //    }
 //
-//    @Test
-//    public void getWhichPickups() {
-//        var x =  Menus.getInstance();
-//        var y = x.getDeliveryShops("Flafel with avocado wrap", "Humus and aubergine wrap",
-//                "Goat's cheese salad Italian roll", "Hummus, falafel and spicy tomato French country roll");
-//        System.out.println(y.toString());
-//    }
-//
-//    @Test
-//    public void getWhichPickups2() {
-//        var x =  Menus.getInstance();
-//        var y = x.getDeliveryShops("Feta cheese and sundried tomato wrap",
-//                "Flafel with humus wrap", "Apple fruit tea", "Mango cap tea");
-//        System.out.println(y.toString());
-//        var z1 = (new What3Words(y.get(0).location));
-//        System.out.println(z1.getCoordinates().toString());
-//
-//        var z2 = (new What3Words(y.get(1).location));
-//        System.out.println(z2.getCoordinates().toString());
-//    }
-//
-////    @Test
-////    public void testW3W() {
-////    assertEquals();
-////    }
-//
-//    @Test
-//    public void order01() {
-//        var x = new Order("c16220b9","s2283092", "surely.native.foal");
-//        assertEquals(x.getDestinationW3W(),"surely.native.foal");
-//        assertEquals(x.getOrderNo(),"c16220b9");
-//        assertEquals(x.getStart(),new What3Words("looks.clouds.daring").getCoordinates());
-//    }
-//
-//    @Test
-//    public void testTSP0() {
-//        var config = Config.getInstance();
-//        var x = new OrderHandler(2,1,2022);
-//        x.fetchOrders();
-//        var y = new PathBuilder(x);
-//        y.buildGraph();
-//        y.doTour();
-//        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-//        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-//        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
-//
-//    }
+    @Test
+    public void getWhichPickups() {
+        var x =  Menus.getInstance();
+        var y = x.getDeliveryShops("Flafel with avocado wrap", "Humus and aubergine wrap",
+                "Goat's cheese salad Italian roll", "Hummus, falafel and spicy tomato French country roll");
+        System.out.println(y.toString());
+    }
+
+    @Test
+    public void getWhichPickups2() {
+        var x =  Menus.getInstance();
+        var y = x.getDeliveryShops("Feta cheese and sundried tomato wrap",
+                "Flafel with humus wrap", "Apple fruit tea", "Mango cap tea");
+        System.out.println(y.toString());
+        var z1 = (new What3Words(y.get(0).location));
+        System.out.println(z1.getCoordinates().toString());
+
+        var z2 = (new What3Words(y.get(1).location));
+        System.out.println(z2.getCoordinates().toString());
+    }
+
+    @Test
+    public void order01() {
+        var x = new Order("c16220b9","s2283092", "surely.native.foal");
+        assertEquals(x.getDestinationW3W(),"surely.native.foal");
+        assertEquals(x.getOrderNo(),"c16220b9");
+        assertEquals(x.getStart(),new What3Words("looks.clouds.daring").getCoordinates());
+    }
+
+    @Test
+    public void testTSP0() {
+        var config = Config.getInstance();
+        var x = new OrderHandler(2,1,2022);
+        x.fetchOrders();
+        var y = new PathBuilder(x);
+        y.buildGraph();
+        y.doTour();
+        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+
+    }
 //
 //    @Test
 //    public void testTSP() {
@@ -344,18 +339,18 @@ public class AppTest {
 //
 //    }
 ////
-//    @Test
-//    public void testTSP2() {
-//        var x = new OrderHandler(31,12,2023);
-//        x.fetchOrders();
-//        var y = new PathBuilder(x);
-//        y.buildGraph();
-//        y.doTour();
-//        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-//        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-//        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
-//
-//    }
+    @Test
+    public void testTSP2() {
+        var x = new OrderHandler(27,12,2023);
+        x.fetchOrders();
+        var y = new PathBuilder(x);
+        y.buildGraph();
+        y.doTour();
+        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+
+    }
 //
 //    @Test
 //    public void testTSP3() {
@@ -395,41 +390,41 @@ public class AppTest {
 //        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
 //        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
 //    }
-
-    @Test
-    public void testA2022Orders() {
-        var start  = LocalDate.of(2022,1,1);
-        var end = LocalDate.of(2022,12,31);
-        var dates = start.datesUntil(end).collect(Collectors.toList());
-
-        for (LocalDate date : dates) {
-            var x = new OrderHandler(date.getDayOfMonth(),date.getMonthValue(),date.getYear());
-            x.fetchOrders();
-            var y = new PathBuilder(x);
-            y.buildGraph();
-            y.doTour();
-            FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-            DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-            DatabaseIO.writeFilepathDatabase(y.getFlightPath());
-        }
-    }
-
-    @Test
-    public void testAllOrders() {
-        var start  = LocalDate.of(2022,1,1);
-        var end = LocalDate.of(2023,12,31);
-        var dates = start.datesUntil(end).collect(Collectors.toList());
-
-        for (LocalDate date : dates) {
-            var x = new OrderHandler(date.getDayOfMonth(),date.getMonthValue(),date.getYear());
-            x.fetchOrders();
-            var y = new PathBuilder(x);
-            y.buildGraph();
-            y.doTour();
-            FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-            DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-            DatabaseIO.writeFilepathDatabase(y.getFlightPath());
-        }
-    }
+//
+//    @Test
+//    public void testA2022Orders() {
+//        var start  = LocalDate.of(2022,1,1);
+//        var end = LocalDate.of(2022,12,31);
+//        var dates = start.datesUntil(end).collect(Collectors.toList());
+//
+//        for (LocalDate date : dates) {
+//            var x = new OrderHandler(date.getDayOfMonth(),date.getMonthValue(),date.getYear());
+//            x.fetchOrders();
+//            var y = new PathBuilder(x);
+//            y.buildGraph();
+//            y.doTour();
+//            FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+//            DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+//            DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+//        }
+//    }
+//
+//    @Test
+//    public void testAllOrders() {
+//        var start  = LocalDate.of(2022,1,1);
+//        var end = LocalDate.of(2023,12,31);
+//        var dates = start.datesUntil(end).collect(Collectors.toList());
+//
+//        for (LocalDate date : dates) {
+//            var x = new OrderHandler(date.getDayOfMonth(),date.getMonthValue(),date.getYear());
+//            x.fetchOrders();
+//            var y = new PathBuilder(x);
+//            y.buildGraph();
+//            y.doTour();
+//            FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+//            DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+//            DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+//        }
+//    }
 
 }

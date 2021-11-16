@@ -238,7 +238,7 @@ public class PathBuilder {
 
     private double calcMonetaryValue() {
         var m =  (profitX/(double) (profitX+profitLostX));
-        System.out.printf("MONTEREY VALUE: %.2f%n",m);
+        System.out.printf("MONETARY VALUE: %.2f%n",m);
         return m;
     }
 
