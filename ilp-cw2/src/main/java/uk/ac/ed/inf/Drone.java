@@ -34,24 +34,6 @@ public class Drone {
     }
 
     /**
-     * Construct the route to a stop from current location and fly the drone there.
-     * Log the DroneMoves made in the flightpath.
-     * @param stop to fly to.
-     */
-    public void flyToStop(Stop stop) {
-        if (currentLocation.closeTo(stop.getCoordinates())) {
-            doHover(); //if close to dest. then just hover for one move.
-        } else {
-            var points = Pathfinding.routeTo(currentLocation, stop.getCoordinates());
-            this.commitMoves(points);
-        }
-
-        if (!currentLocation.closeTo(stop.getCoordinates())) {
-            System.err.println("LOCATION NOT CLOSE TO" + stop.getCoordinates());
-        }
-    }
-
-    /**
      * Hover the drone at its current location.
      * Log the move in the flightpath.
      */
@@ -61,7 +43,7 @@ public class Drone {
     }
 
     /**
-     * Move to a location.
+     * Do one fly move and update current location.
      * This does *not* check for intersections with No Fly Zone,
      * but does check it is a doable move.
      * @param y location to move to as LongLat.
@@ -70,9 +52,43 @@ public class Drone {
     public void doMove(LongLat y, int angle) {
 
         var nextLocation = currentLocation.nextPosition(angle);
+
+        if (Math.abs(currentLocation.distanceTo(nextLocation)-currentLocation.distanceTo(y))>1E12) {
+            System.err.println("Possible illegal move in doMove: " + y);
+        }
+
         var newMove = new DroneMove(currentOrderNo, currentLocation, y, angle);
         flightPath.add(newMove);
         currentLocation = newMove.getTo();
+    }
+
+    /**
+     * Construct the route to a stop from current location and fly the drone there.
+     * Log the DroneMoves made in the flightpath and update current location.
+     * @param dest to fly to.
+     */
+    public void flyToLocation(LongLat dest) {
+        if (currentLocation.closeTo(dest)) {
+            doHover(); //if close to dest. then just hover for one move.
+        } else {
+            var points = Pathfinding.routeTo(currentLocation, dest);
+            this.commitMoves(points);
+        }
+
+        if (!currentLocation.closeTo(dest)) {
+            System.err.println("LOCATION NOT CLOSE TO" + dest);
+        }
+    }
+
+    /**
+     * Construct route from current location to a Stop and fly there.
+     * Set order being delivered from Stop given.
+     * Log the DroneMoves made in the flightpath and update current location.
+     * @param stop to fly to.
+     */
+    public void flyToStop(Stop stop) {
+        setCurrentOrder(stop.getOrderNo());
+        flyToLocation(stop.getCoordinates());
     }
 
     /**
@@ -95,7 +111,7 @@ public class Drone {
                 System.err.println("from " + x);
                 System.err.println("to: " + y);
                 System.err.println("ang: " + ang);
-                System.err.println("expected y" + expected);
+                System.err.println("expected like: " + expected);
                 System.err.println(x.distanceTo(y));
                 System.err.println(x.distanceTo(expected));
                 System.err.println(x.distanceTo(y) - x.distanceTo(expected));

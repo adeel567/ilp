@@ -40,7 +40,7 @@ public class Pathfinding {
                 if (!myNoFlyZones.doesIntersectNoFly(a, b) && m.isConfined()) {
                     double totalWeight = (n.g + LongLat.STRAIGHT_LINE_DISTANCE);
 
-                    if (all.containsKey(m.asLongLat())) {
+                    if (all.containsKey(m.asLongLat())) { //as DS is not a graph, need to check if node is new or not.
                         m = all.get(m.asLongLat());
                     } else {
                         all.put(m.asLongLat(), m);

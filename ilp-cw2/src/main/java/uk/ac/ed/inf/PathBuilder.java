@@ -4,7 +4,6 @@ import org.jgrapht.graph.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 
 public class PathBuilder {
 
@@ -215,6 +214,11 @@ public class PathBuilder {
         System.out.println("MOVES TAKEN: " + flight.size());
     }
 
+    /**
+     * Calculate the amount of money made from the orders delivered.
+     * @param perms orderNos being delivered.
+     * @return amount of money.
+     */
     private int calcProfit(ArrayList<String> perms) {
         int profit = 0;
         for (String perm : perms) {
@@ -227,6 +231,11 @@ public class PathBuilder {
         return profit;
     }
 
+    /**
+     * Calculate how much money has been lost from undeliverable orders.
+     * @param removed which orderNos will not be delivered.
+     * @return amount of money lost.
+     */
     private int calcProfitLost(ArrayList<String> removed) {
         int lost = 0;
         for (String s : removed) {
@@ -242,21 +251,29 @@ public class PathBuilder {
         return m;
     }
 
-
+    /**
+     * Build a drone and its route from the stops to be made on a day's orders.
+     * @param allStops stops to be made.
+     * @return a Drone object with a completed flightpath.
+     */
     public Drone flightFromStopsMade(ArrayList<Stop> allStops) {
         var drone = new Drone(allStops.get(0).getCoordinates());
 
-        for (int i = 1, allStopsSize = allStops.size(); i < allStopsSize; i++) {
+        for (int i = 1, allStopsSize = allStops.size()-1; i < allStopsSize; i++) {
             Stop stop = allStops.get(i);
 
-            drone.setCurrentOrder(stop.getOrderNo());
             drone.flyToStop(stop);
             drone.doHover();
         }
+        drone.flyToStop(allStops.get(allStops.size()-1));
         return drone;
     }
 
-
+    /**
+     * Get all the stops to be made on a day's orders
+     * @param perms orderNos of deliveries to be made.
+     * @return all stops to be made to complete orders.
+     */
     private ArrayList<Stop> allStopsMade(ArrayList<String> perms)
     {
         var test = new ArrayList<Stop>();
@@ -273,16 +290,20 @@ public class PathBuilder {
         return test;
     }
 
-    public ArrayList<DroneMove> getFlightPath() {
-        return this.flightPath;
-    }
-
+    /**
+     * Get which Orders will be delivered today.
+     * @return all the Order objects from orderNos that will be delivered.
+     */
     public ArrayList<Order> getOrdersDelivered() {
         var orders = new ArrayList<Order>();
         for (String s : ordersCompleted) {
             orders.add(todaysOrders.get(s));
         }
         return orders;
+    }
+
+    public ArrayList<DroneMove> getFlightPath() {
+        return this.flightPath;
     }
 
 }

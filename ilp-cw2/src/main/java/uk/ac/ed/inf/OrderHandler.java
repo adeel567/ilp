@@ -55,6 +55,17 @@ public class OrderHandler {
         assert (this.orders.size() > 0) : "Warning: no orders available";
     }
 
+    /**
+     * Calculate the total value of all orders in the OrderHandler.
+     * @return the total value of all orders
+     */
+    public int getTotalValue() {
+        int i = 0;
+        for (Order order : orders.values()) {
+            i += order.getDeliveryCost();
+        }
+        return i;
+    }
 
     public HashMap<String,Order> getAllOrders(){
         return this.orders;
