@@ -32,8 +32,8 @@ public class DroneMove {
             System.err.println("DRONE HOVER ILLEGAL");
             System.err.println(this);
 
-        } else if ((from.distanceTo(to) > LongLat.STRAIGHT_LINE_DISTANCE+1E-12) ||
-            (from.distanceTo(to) < LongLat.STRAIGHT_LINE_DISTANCE-1E-12) && angle!=LongLat.JUNK_ANGLE) {
+        } else if (((from.distanceTo(to) > LongLat.STRAIGHT_LINE_DISTANCE+1E-12) ||
+            (from.distanceTo(to) < LongLat.STRAIGHT_LINE_DISTANCE-1E-12)) && angle!=LongLat.JUNK_ANGLE) {
             System.err.println("DRONE MOVE POTENTIALLY ILLEGAL");
             System.err.println(this);
             System.err.println(from.distanceTo(to));
@@ -91,9 +91,7 @@ public class DroneMove {
         var feature = Feature.fromGeometry(
                 (Geometry) LineString.fromLngLats(path));
 
-        var fc = FeatureCollection.fromFeature(feature);
-        //System.out.println(fc.toJson());
-        return fc;
+        return FeatureCollection.fromFeature(feature);
     }
 
     /**

@@ -1,5 +1,6 @@
 package uk.ac.ed.inf;
 
+import org.jgrapht.Graphs;
 import org.jgrapht.graph.*;
 
 import java.util.ArrayList;
@@ -159,7 +160,9 @@ public class PathBuilder {
     public void doTour() {
         //copy of graph is needed to delete and add vertexes.
         //as no underlying modification is being made, a shallow copy is all that is needed.
-        var preserveGraph  = (SimpleDirectedWeightedGraph<String,tspEdge>) originalGraph.clone();
+
+
+        var preserveGraph  = shallowCopyOf(originalGraph); //local copy of graph
         var movesUsed = 0;
         ArrayList<String> perms = null;
         ArrayList<DroneMove> flight = null;
@@ -167,9 +170,10 @@ public class PathBuilder {
         ArrayList<String> removed = new ArrayList<>();
 
         while (movesUsed > MOVES_ALLOWED || curr.equals(start.getId())) {
-            var whileGraph  = (SimpleDirectedWeightedGraph<String,tspEdge>) preserveGraph.clone();
+            var whileGraph  = shallowCopyOf(preserveGraph);
+            System.out.println("NODES" + whileGraph.vertexSet().size());
             curr = start.getId();
-            perms = new ArrayList<String>();
+            perms = new ArrayList<>();
 
             while (hasNextEdge(whileGraph, curr)) { //keep doing if there are still edges to be visited
                 var nextEdge = greedyNextEdge(whileGraph, curr); //get next edge
@@ -185,17 +189,15 @@ public class PathBuilder {
             movesUsed = currentDrone.movesUsed();
 
             if (movesUsed > MOVES_ALLOWED) { //prepare for next loop
-                //get order that is 'worst' from end location, remove from the graph that will
-                //be reset for use in the next loop
-
                 System.out.println("CURRENT PERM: "+ perms);
                 System.out.println("CURRENT MOVES USED " + movesUsed);
 
-                var fixEnds  = (SimpleDirectedWeightedGraph<String,tspEdge>) preserveGraph.clone(); //reset
+                //get order that is 'worst' from end location, remove from the graph that will be used in next loop.
+                var fixEnds  = shallowCopyOf(preserveGraph); //reset to local copy
                 addEnd(fixEnds); //add edges to end location
                 removed.add(worstEndVert(fixEnds)); //get 'worst' and add to removed
 
-                preserveGraph.removeAllVertices(removed); //setup for next iteration
+                preserveGraph.removeAllVertices(removed); //setup for next iteration by removing worst vertices
             }
         }
 
@@ -212,6 +214,18 @@ public class PathBuilder {
         this.profitLostX = calcProfitLost(removed);
         this.monetaryValue = calcMonetaryValue();
         System.out.println("MOVES TAKEN: " + flight.size());
+    }
+
+    /**
+     * Create a shallow copy of a graph by adding all of its vertices and edges to a new graph.
+     * This is so vertices can be 'popped' and the graph reset after without a full rebuild.
+     * @param g graph to copy from.
+     * @return a shallow copy of the given graph.
+     */
+    private SimpleDirectedWeightedGraph<String,tspEdge> shallowCopyOf(SimpleDirectedWeightedGraph<String,tspEdge> g) {
+        var newG = new SimpleDirectedWeightedGraph<String,tspEdge>(tspEdge.class);
+        Graphs.addGraph(newG,g);
+        return newG;
     }
 
     /**
@@ -265,7 +279,7 @@ public class PathBuilder {
             drone.flyToStop(stop);
             drone.doHover();
         }
-        drone.flyToStop(allStops.get(allStops.size()-1));
+        drone.flyToStop(allStops.get(allStops.size()-1)); //fly home
         return drone;
     }
 
@@ -304,6 +318,18 @@ public class PathBuilder {
 
     public ArrayList<DroneMove> getFlightPath() {
         return this.flightPath;
+    }
+
+    public int getProfit() {
+        return profitX;
+    }
+
+    public int getProfitLost() {
+        return profitLostX;
+    }
+
+    public double getMonetaryValue() {
+        return monetaryValue;
     }
 
 }
