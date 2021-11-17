@@ -4,45 +4,55 @@ import org.jgrapht.graph.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 
 public class PathBuilder {
 
-
+    //constants for number of moves allowed and the location of drone's home.
     private static final int MOVES_ALLOWED = 1500;
     private static final double AT_LONGITUDE = -3.186874;
     private static final double AT_LATITUDE = 55.944494;
 
-    private final HashMap<String,Order> todaysOrders;
+    //store all original orders, which orders will be delivered, and the path for delivering such orders.
+    private final OrderHandler todaysOrders;
     private ArrayList<String> ordersCompleted;
     private ArrayList<DroneMove> flightPath;
 
-    private SimpleDirectedWeightedGraph<String,tspEdge> realGraph;
+    //graph used for optimising order permutation.
+    private SimpleDirectedWeightedGraph<String,tspEdge> originalGraph;
 
+    //where will the drone start and end
     private final Stop start;
     private final Stop end;
 
-    private final Navigation myNavigation = Navigation.getInstance();
+    private final NoFlyZones myNoFlyZones = NoFlyZones.getInstance();
 
     //statistics
     private int profitX;
     private int profitLostX;
+    private double monetaryValue;
 
 
-
-    public PathBuilder(HashMap<String,Order> todaysOrders) {
+    /**
+     * Class for constructing the optimal* delivery route for the day.
+     * @param todaysOrders order handler for today's orders.
+     */
+    public PathBuilder(OrderHandler todaysOrders) {
         this.todaysOrders = todaysOrders;
         this.start = new Stop("START", new LongLat(AT_LONGITUDE, AT_LATITUDE),"START");
         this.end = new Stop("END", new LongLat(AT_LONGITUDE, AT_LATITUDE),"END");
 
-        System.out.println("ALL " +todaysOrders.keySet().size()+ " ORDERS: " + todaysOrders.keySet());
+        System.out.println("ALL " +todaysOrders.getAllOrderNos().size()+ " ORDERS: " + todaysOrders.getAllOrderNos());
     }
 
+    /**
+     * Builds an undirected weighted graph of Start and all Orders to be completed.
+     * The edges are weights calculated from the cost of the order to be completed and the total
+     * distance from flying to the start point from current position until the end.
+     */
     public void buildGraph(){
-
         var initialGraph = new SimpleDirectedWeightedGraph<String, tspEdge>(tspEdge.class);
 
-        for (var orderNo : todaysOrders.keySet()) {
+        for (var orderNo : todaysOrders.getAllOrderNos()) {
             initialGraph.addVertex(orderNo);
         }
 
@@ -51,15 +61,11 @@ public class PathBuilder {
                 if (!x.equals(y)) {
                     var ordX = todaysOrders.get(x);
                     var ordY = todaysOrders.get(y);
-                    var route = myNavigation.getRoute(ordY.getOrderNo(),
-                            ordX.getDestination(), ordY.getStart());
-                    route.addAll(ordY.getFlightPath());
-                    var totalDist = route.size();
+
+                    var totalDist = ordY.getEstimatedDistance() + ordX.getDestination().tspHeuristic(ordY.getStart());
                     var weight = totalDist/(double) ordY.getDeliveryCost();
 
-                    var edge = new tspEdge(weight, route, totalDist);
-                    initialGraph.addEdge(x,y,edge);
-                    initialGraph.setEdgeWeight(edge,weight);
+                    addEdge(initialGraph, x, y, weight);
                 }
             }
         }
@@ -68,60 +74,92 @@ public class PathBuilder {
         for (var y : initialGraph.vertexSet()) {
             if (!y.equals(start.getId())) {
                 var ordY = todaysOrders.get(y);
-                var route = myNavigation.getRoute(ordY.getOrderNo(), start.getCoordinates(),
-                        ordY.getStart());
-                route.addAll(ordY.getFlightPath());
-                var totalDist = route.size();
+
+                var totalDist = ordY.getEstimatedDistance() + start.getCoordinates().tspHeuristic(ordY.getStart());
                 var weight = totalDist / (double) ordY.getDeliveryCost();
 
-                var edge = new tspEdge(weight, route, totalDist);
-                initialGraph.addEdge(start.getId(),y,edge);
-                initialGraph.setEdgeWeight(edge,weight);
+                addEdge(initialGraph, start.getId(), y, weight);
             }
         }
-
-        this.realGraph = initialGraph;
+        this.originalGraph = initialGraph;
     }
 
+    /**
+     * Add edge to graph
+     * @param g directed weighted graph
+     * @param x from node
+     * @param y to node
+     * @param weight weight between the two nodes
+     */
+    private void addEdge(SimpleDirectedWeightedGraph<String, tspEdge> g, String x, String y, double weight) {
+        var edge = new tspEdge(weight);
+        g.addEdge(x, y, edge);
+        g.setEdgeWeight(edge, weight);
+
+    }
+
+    /**
+     * Add edges from all orders to end location.
+     * This is used when moves are over what is allowed, in order to find which node to drop.
+     * @param g directed weighted graph without End.
+     */
     private void addEnd(SimpleDirectedWeightedGraph<String, tspEdge> g) {
         g.addVertex(end.getId());
         for (var x : g.vertexSet()) {
             if (!(x.equals(end.getId()) || x.equals(start.getId())) ) {
                 var ordX = todaysOrders.get(x);
-                var route = myNavigation.getRoute(end.getId(), ordX.getDestination(),
-                        end.getCoordinates());
-                var totalDist = route.size();
 
-//                var totalDist = (int)((ordX.getDestination().distanceTo(end.coordinates)));
+                var totalDist = ordX.getEstimatedDistance() + ordX.getDestination().tspHeuristic(end.getCoordinates());
+                var weight = totalDist/ (double) ordX.getDeliveryCost();
 
-                var weight = totalDist / (double) ordX.getDeliveryCost();
-
-
-                var edge = new tspEdge(weight, route, totalDist);
-                g.addEdge(x,end.getId(),edge);
-                g.setEdgeWeight(edge,weight);
+                addEdge(g, x, end.getId(), weight);
             }
         }
     }
 
+    /**
+     * Check if there are still orders to visit on graph.
+     * @param g directed weighted graph.
+     * @param vert order we are currently at.
+     * @return true if there are more edges, thus more orders to complete.
+     */
     private Boolean hasNextEdge (SimpleDirectedWeightedGraph<String,tspEdge> g, String vert) {
         return g.outDegreeOf(vert) > 0;
     }
 
+    /**
+     * Figure out which order to complete next.
+     * This is done in a greedy fashion, by selecting a visitable order with the lowest weight.
+     * @param g directed weighted graph with orders still to visit.
+     * @param from order we are currently at.
+     * @return edge that we will travel along
+     */
     private tspEdge greedyNextEdge(SimpleDirectedWeightedGraph<String,tspEdge> g, String from) {
         return (Collections.min(g.outgoingEdgesOf(from)));
     }
 
+    /**
+     * When moves are over what is allowed, we find the node with the 'worst' weight
+     * to the end location in order to remove it.
+     * @param g directed weighted graph with all orders and end node.
+     * @return orderNo of 'worst' order.
+     */
     private String worstEndVert(SimpleDirectedWeightedGraph<String,tspEdge> g) {
         var x = g.getEdgeSource(Collections.max(g.incomingEdgesOf(end.getId())));
         System.out.println("REMOVED: " + x);
         return x;
     }
 
+    /**
+     * Construct a tour of the orders by going from the start and greedily picking the best
+     * next order. Once all orders have been added, construct a drone to fly over. if the
+     * moves of the drone are within the allowed limit we terminate, otherwise remove the
+     * worst node and try again.
+     */
     public void doTour() {
         //copy of graph is needed to delete and add vertexes.
         //as no underlying modification is being made, a shallow copy is all that is needed.
-        var preserveGraph  = (SimpleDirectedWeightedGraph<String,tspEdge>) realGraph.clone();
+        var preserveGraph  = (SimpleDirectedWeightedGraph<String,tspEdge>) originalGraph.clone();
         var movesUsed = 0;
         ArrayList<String> perms = null;
         ArrayList<DroneMove> flight = null;
@@ -130,33 +168,21 @@ public class PathBuilder {
 
         while (movesUsed > MOVES_ALLOWED || curr.equals(start.getId())) {
             var whileGraph  = (SimpleDirectedWeightedGraph<String,tspEdge>) preserveGraph.clone();
-            movesUsed = 0;
             curr = start.getId();
             perms = new ArrayList<String>();
-            //perms.add(start.id);
-            //flight = new ArrayList<DroneMove>();
 
             while (hasNextEdge(whileGraph, curr)) { //keep doing if there are still edges to be visited
-                var nextEdge = greedyNextEdge(whileGraph, curr);
-              //  movesUsed += nextEdge.getMoves();
-              //  flight.addAll(nextEdge.getRoute());
-                var next = whileGraph.getEdgeTarget(nextEdge);
+                var nextEdge = greedyNextEdge(whileGraph, curr); //get next edge
+                var next = whileGraph.getEdgeTarget(nextEdge); //get next order
                 whileGraph.removeVertex(curr); //pop order as it's been visited
                 curr = next;
                 perms.add(next);
             }
 
-            addEnd(whileGraph); //final order to end location
-
-            var homeEdge = (whileGraph.getEdge(curr,end.getId()));
-          //  flight.addAll(homeEdge.getRoute());
-          //  movesUsed += homeEdge.getMoves();
-          //  perms.add(end.id);
-
             var allStopsMade = allStopsMade(perms);
-            var currentFlightPath = flightFromStopsMade(allStopsMade);
-            flight = currentFlightPath;
-            movesUsed = currentFlightPath.size();
+            var currentDrone = flightFromStopsMade(allStopsMade);
+            flight = currentDrone.getFlightPath();
+            movesUsed = currentDrone.movesUsed();
 
             if (movesUsed > MOVES_ALLOWED) { //prepare for next loop
                 //get order that is 'worst' from end location, remove from the graph that will
@@ -165,11 +191,11 @@ public class PathBuilder {
                 System.out.println("CURRENT PERM: "+ perms);
                 System.out.println("CURRENT MOVES USED " + movesUsed);
 
-                var fixEnds  = (SimpleDirectedWeightedGraph<String,tspEdge>) preserveGraph.clone();
-                addEnd(fixEnds);
-                removed.add(worstEndVert(fixEnds));
+                var fixEnds  = (SimpleDirectedWeightedGraph<String,tspEdge>) preserveGraph.clone(); //reset
+                addEnd(fixEnds); //add edges to end location
+                removed.add(worstEndVert(fixEnds)); //get 'worst' and add to removed
 
-                preserveGraph.removeAllVertices(removed);
+                preserveGraph.removeAllVertices(removed); //setup for next iteration
             }
         }
 
@@ -182,24 +208,17 @@ public class PathBuilder {
 
         this.flightPath = flight;
 
-        ///////
         this.profitX = calcProfit(perms);
         this.profitLostX = calcProfitLost(removed);
-        System.out.println("MONTEREY THING: " + (profitX/(double) (profitX+profitLostX)));
+        this.monetaryValue = calcMonetaryValue();
         System.out.println("MOVES TAKEN: " + flight.size());
-
-        for (int i = 0; i < flight.size() - 1; i++) {
-            var dm = flight.get(i);
-            var dm2 = flight.get(i + 1);
-            if (!(dm.getTo().equals(dm2.getFrom()))) {
-                System.err.println(dm);
-                System.err.println("ILLEGAL MOVE!");
-                System.err.println(dm2);
-            }
-        }
-
     }
 
+    /**
+     * Calculate the amount of money made from the orders delivered.
+     * @param perms orderNos being delivered.
+     * @return amount of money.
+     */
     private int calcProfit(ArrayList<String> perms) {
         int profit = 0;
         for (String perm : perms) {
@@ -212,6 +231,11 @@ public class PathBuilder {
         return profit;
     }
 
+    /**
+     * Calculate how much money has been lost from undeliverable orders.
+     * @param removed which orderNos will not be delivered.
+     * @return amount of money lost.
+     */
     private int calcProfitLost(ArrayList<String> removed) {
         int lost = 0;
         for (String s : removed) {
@@ -221,28 +245,35 @@ public class PathBuilder {
         return lost;
     }
 
-
-    public ArrayList<DroneMove> flightFromStopsMade(ArrayList<Stop> test) {
-        ArrayList<DroneMove> route = new ArrayList<>();
-
-        //add first journey on its own
-        var a = test.get(0);
-        var b = test.get(1);
-        route.addAll(myNavigation.getRoute(b.getOrderNo(),a.getCoordinates(),b.getCoordinates()));
-        var latestC = route.get(route.size()-1).getTo();
-        route.add(new DroneMove(b.getOrderNo(),latestC,latestC,LongLat.JUNK_ANGLE));
-
-
-        for (int i = 1; i < test.size()-1; i++) {
-             var x = route.get(route.size()-1).getTo();
-             var y = test.get(i+1);
-            route.addAll(myNavigation.getRoute(y.getOrderNo(),x,y.getCoordinates()));
-             latestC = route.get(route.size()-1).getTo();
-            route.add(new DroneMove(y.getOrderNo(),latestC,latestC,LongLat.JUNK_ANGLE));
-        }
-        return route;
+    private double calcMonetaryValue() {
+        var m =  (profitX/(double) (profitX+profitLostX));
+        System.out.printf("MONETARY VALUE: %.2f%n",m);
+        return m;
     }
 
+    /**
+     * Build a drone and its route from the stops to be made on a day's orders.
+     * @param allStops stops to be made.
+     * @return a Drone object with a completed flightpath.
+     */
+    public Drone flightFromStopsMade(ArrayList<Stop> allStops) {
+        var drone = new Drone(allStops.get(0).getCoordinates());
+
+        for (int i = 1, allStopsSize = allStops.size()-1; i < allStopsSize; i++) {
+            Stop stop = allStops.get(i);
+
+            drone.flyToStop(stop);
+            drone.doHover();
+        }
+        drone.flyToStop(allStops.get(allStops.size()-1));
+        return drone;
+    }
+
+    /**
+     * Get all the stops to be made on a day's orders
+     * @param perms orderNos of deliveries to be made.
+     * @return all stops to be made to complete orders.
+     */
     private ArrayList<Stop> allStopsMade(ArrayList<String> perms)
     {
         var test = new ArrayList<Stop>();
@@ -253,23 +284,26 @@ public class PathBuilder {
         }
         test.add(end);
 
-        for (Stop stop : test) {
-            System.out.println(stop);
-        }
+//        for (Stop stop : test) {
+//            System.out.println(stop);
+//        }
         return test;
     }
 
-
-    public ArrayList<DroneMove> getFlightPath() {
-        return this.flightPath;
-    }
-
+    /**
+     * Get which Orders will be delivered today.
+     * @return all the Order objects from orderNos that will be delivered.
+     */
     public ArrayList<Order> getOrdersDelivered() {
         var orders = new ArrayList<Order>();
         for (String s : ordersCompleted) {
             orders.add(todaysOrders.get(s));
         }
         return orders;
+    }
+
+    public ArrayList<DroneMove> getFlightPath() {
+        return this.flightPath;
     }
 
 }

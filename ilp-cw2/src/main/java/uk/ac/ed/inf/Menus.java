@@ -27,12 +27,20 @@ public class Menus {
     private final HashMap<String,Integer> itemPrices;
     private final HashMap<String,Shop> itemStops;
 
+    /**
+     * Uses a singleton pattern, so it has a private constructor.
+     */
     private Menus() {
         this.shops = new ArrayList<>(getShopDetails()); //get all shops once.
         this.itemPrices = new HashMap<>(getItemPrices());
         this.itemStops = new HashMap<>(getItemStops());
     }
 
+    /**
+     * Get the instance of Menus
+     * Will be created if it doesn't exist
+     * @return Menus object
+     */
     public static Menus getInstance() {
         if (instance == null) {
             instance = new Menus();
@@ -53,7 +61,12 @@ public class Menus {
         return totalPrice;
     }
 
-    public ArrayList<Shop> getDeliveryStops(String... items) {
+    /**
+     * Gets the set of shops that need to be visited for a delivery.
+     * @param items' which have been ordered
+     * @return the set of shops for these items.
+     */
+    public ArrayList<Shop> getDeliveryShops(String... items) {
         Set<Shop> stops = new HashSet<>();
         for (String itemName: items) {
             stops.add(itemStops.get(itemName));
@@ -92,6 +105,10 @@ public class Menus {
         return parsedShops;
     }
 
+    /**
+     * Obtain the pairs of items and respective shops
+     * @return a HashMap of the item and shop pairs.
+     */
     private HashMap<String, Shop> getItemStops() {
         HashMap<String, Shop> itemStops = new HashMap<>();
         for (Shop shop : this.shops) {

@@ -5,13 +5,23 @@ package uk.ac.ed.inf;
  */
 public class Config {
     private static Config instance = null;
+
+    //set defaults if left unchanged.
     private String serverPort = "9898";
     private String serverHost = "localhost";
     private String dbHost = "localhost";
     private String dbPort = "1527";
 
+    /**
+     * Uses singleton pattern, so private constructor.
+     */
     private Config(){}
 
+    /**
+     * Get the instance of Config
+     * Will be created if it doesn't exist
+     * @return Config object
+     */
     public static Config getInstance() {
         if(instance == null) {
             instance = new Config();

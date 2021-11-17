@@ -2,7 +2,6 @@ package uk.ac.ed.inf;
 
 import org.junit.Test;
 
-import java.util.PriorityQueue;
 
 import static org.junit.Assert.*;
 
@@ -197,81 +196,88 @@ public class AppTest {
     public void testRoute1() {
         LongLat start = new LongLat(-3.1880, 55.9461);
         LongLat end = new LongLat(-3.1890, 55.9427);
-        Navigation test = Navigation.getInstance();
-        var x = test.getRoute("JUNK",start, end);
+        Drone drone = new Drone(start);
+        drone.flyToLocation(end);
+        var x = drone.getFlightPath();
         System.out.println(x.size());
-        DroneMove.getMovesAsFC(x);
-    }
+        System.out.println(DroneMove.getMovesAsFC(x).toJson()); }
 
     @Test
     public void testRoute2() {
-        aStarNode end = new aStarNode(-3.191065, 55.945626);
-        aStarNode start = new aStarNode(-3.186103, 55.944656);
-        Navigation test = Navigation.getInstance();
-        var x = test.getRoute("JUNK",start, end);
+        PathfindingNode end = new PathfindingNode(-3.191065, 55.945626);
+        PathfindingNode start = new PathfindingNode(-3.186103, 55.944656);
+        var stop = new Stop(null,end,null);
+        Drone drone = new Drone(start);
+        drone.flyToLocation(end);
+        var x = drone.getFlightPath();
         System.out.println(x.size());
-        DroneMove.getMovesAsFC(x);    }
+        System.out.println(DroneMove.getMovesAsFC(x).toJson()); }
 
     @Test
     public void testRoute3() {
-        aStarNode start = new aStarNode(-3.191065, 55.945626);
-        aStarNode end = new aStarNode(-3.187837, 55.943497);
-        Navigation test = Navigation.getInstance();
-        var x = test.getRoute("JUNK",start, end);
+        PathfindingNode start = new PathfindingNode(-3.191065, 55.945626);
+        PathfindingNode end = new PathfindingNode(-3.187837, 55.943497);
+        Drone drone = new Drone(start);
+        drone.flyToLocation(end);
+        var x = drone.getFlightPath();
         System.out.println(x.size());
-        DroneMove.getMovesAsFC(x);    }
+        System.out.println(DroneMove.getMovesAsFC(x).toJson()); }
 
     @Test
     public void testRoute4() {
-        aStarNode start = new aStarNode(-3.191594,55.943658);
-        aStarNode end = new aStarNode(-3.186199,55.945734);
-        Navigation test = Navigation.getInstance();
-        var x = test.getRoute("JUNK",start, end);
+        PathfindingNode start = new PathfindingNode(-3.191594,55.943658);
+        PathfindingNode end = new PathfindingNode(-3.186199,55.945734);
+        Drone drone = new Drone(start);
+        drone.flyToLocation(end);
+        var x = drone.getFlightPath();
         System.out.println(x.size());
-        DroneMove.getMovesAsFC(x);    }
+        System.out.println(DroneMove.getMovesAsFC(x).toJson()); }
 
     @Test
     public void testRoute5() {
-        aStarNode start = new aStarNode(-3.191065, 55.945626);
-        aStarNode end = new aStarNode(-3.191065, 55.945726);
-        Navigation test = Navigation.getInstance();
-        var x = test.getRoute("JUNK",start, end);
+        PathfindingNode start = new PathfindingNode(-3.191065, 55.945626);
+        PathfindingNode end = new PathfindingNode(-3.191065, 55.945726);
+        Drone drone = new Drone(start);
+        drone.flyToLocation(end);
+        var x = drone.getFlightPath();
         System.out.println(x.size());
-        DroneMove.getMovesAsFC(x);    }
-
+        System.out.println(DroneMove.getMovesAsFC(x).toJson()); }
+//
     @Test
     public void testRoute6() {
-        aStarNode start = new aStarNode(-3.191065, 55.945626);
-        aStarNode end = new aStarNode(-3.191065, 55.945626+LongLat.STRAIGHT_LINE_DISTANCE+0.000001);
-        Navigation test = Navigation.getInstance();
-        var x = test.getRoute("JUNK",start, end);
+        LongLat start = new LongLat(-3.1882, 55.9436);
+        LongLat end = new LongLat(-3.1882, 55.9436+LongLat.STRAIGHT_LINE_DISTANCE+0.00000001);
+        Drone drone = new Drone(start);
+        drone.flyToLocation(end);
+        var x = drone.getFlightPath();
         System.out.println(x.size());
-        DroneMove.getMovesAsFC(x);    }
+        System.out.println(DroneMove.getMovesAsFC(x).toJson()); }
 
-    @Test
-    public void testRouteShortHover() {
-        LongLat start = new LongLat(-3.1890,55.9452);
-        LongLat end = new LongLat(-3.1890+0.00015*2,55.9452);
-        Navigation test = Navigation.getInstance();
-        var x = test.getRoute("JUNK",start, end);
-        x.add(new DroneMove("JUNK",end,end, -999));
-        System.out.println(x.size());
-        var y = DroneMove.getMovesAsFC(x);
-
-        assertEquals(x.size(),3);
-
-    }
-
-    @Test
-    public void testFetchOrders() {
-        var x = new OrderHandler(31,12,2022);
-        x.fetchOrders();
-    }
-
+//
+//    @Test
+//    public void testRouteShortHover() {
+//        LongLat start = new LongLat(-3.1890,55.9452);
+//        LongLat end = new LongLat(-3.1890+0.00015*2,55.9452);
+//        NoFlyZones test = NoFlyZones.getInstance();
+//        var x = test.getRoute("JUNK",start, end);
+//        x.add(new DroneMove("JUNK",end,end, -999));
+//        System.out.println(x.size());
+//        var y = DroneMove.getMovesAsFC(x);
+//
+//        assertEquals(x.size(),3);
+//
+//    }
+//
+//    @Test
+//    public void testFetchOrders() {
+//        var x = new OrderHandler(31,12,2022);
+//        x.fetchOrders();
+//    }
+//
     @Test
     public void getWhichPickups() {
         var x =  Menus.getInstance();
-        var y = x.getDeliveryStops("Flafel with avocado wrap", "Humus and aubergine wrap",
+        var y = x.getDeliveryShops("Flafel with avocado wrap", "Humus and aubergine wrap",
                 "Goat's cheese salad Italian roll", "Hummus, falafel and spicy tomato French country roll");
         System.out.println(y.toString());
     }
@@ -279,7 +285,7 @@ public class AppTest {
     @Test
     public void getWhichPickups2() {
         var x =  Menus.getInstance();
-        var y = x.getDeliveryStops("Feta cheese and sundried tomato wrap",
+        var y = x.getDeliveryShops("Feta cheese and sundried tomato wrap",
                 "Flafel with humus wrap", "Apple fruit tea", "Mango cap tea");
         System.out.println(y.toString());
         var z1 = (new What3Words(y.get(0).location));
@@ -290,11 +296,19 @@ public class AppTest {
     }
 
     @Test
+    public void order01() {
+        var x = new Order("c16220b9","s2283092", "surely.native.foal");
+        assertEquals(x.getDestinationW3W(),"surely.native.foal");
+        assertEquals(x.getOrderNo(),"c16220b9");
+        assertEquals(x.getStart(),new What3Words("looks.clouds.daring").getCoordinates());
+    }
+
+    @Test
     public void testTSP0() {
         var config = Config.getInstance();
-        var x = new OrderHandler(5,1,2022);
+        var x = new OrderHandler(20,1,2022);
         x.fetchOrders();
-        var y = new PathBuilder(x.getAllOrders());
+        var y = new PathBuilder(x);
         y.buildGraph();
         y.doTour();
         FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
@@ -302,26 +316,26 @@ public class AppTest {
         DatabaseIO.writeFilepathDatabase(y.getFlightPath());
 
     }
-
-    @Test
-    public void testTSP() {
-        var config = Config.getInstance();
-        var x = new OrderHandler(29,9,2023);
-        x.fetchOrders();
-        var y = new PathBuilder(x.getAllOrders());
-        y.buildGraph();
-        y.doTour();
-        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
-
-    }
-
+//
+//    @Test
+//    public void testTSP() {
+//        var config = Config.getInstance();
+//        var x = new OrderHandler(29,9,2023);
+//        x.fetchOrders();
+//        var y = new PathBuilder(x);
+//        y.buildGraph();
+//        y.doTour();
+//        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+//        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+//        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+//
+//    }
+////
     @Test
     public void testTSP2() {
-        var x = new OrderHandler(31,12,2023);
+        var x = new OrderHandler(27,12,2023);
         x.fetchOrders();
-        var y = new PathBuilder(x.getAllOrders());
+        var y = new PathBuilder(x);
         y.buildGraph();
         y.doTour();
         FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
@@ -329,55 +343,80 @@ public class AppTest {
         DatabaseIO.writeFilepathDatabase(y.getFlightPath());
 
     }
-
-    @Test
-    public void testTSP3() {
-        var x = new OrderHandler(25,12,2022);
-        x.fetchOrders();
-        var y = new PathBuilder(x.getAllOrders());
-        y.buildGraph();
-        y.doTour();
-        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
-
-    }
-
-    @Test
-    public void testTSP4() {
-        var x = new OrderHandler(31,12,2022);
-        x.fetchOrders();
-        var y = new PathBuilder(x.getAllOrders());
-        y.buildGraph();
-        y.doTour();
-        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
-
-    }
-
-
+//
+//    @Test
+//    public void testTSP3() {
+//        var x = new OrderHandler(28,9,2023);
+//        x.fetchOrders();
+//        var y = new PathBuilder(x);
+//        y.buildGraph();
+//        y.doTour();
+//        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+//        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+//        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+//
+//    }
+//
+//    @Test
+//    public void testTSP4() {
+//        var x = new OrderHandler(31,12,2023);
+//        x.fetchOrders();
+//        var y = new PathBuilder(x);
+//        y.buildGraph();
+//        y.doTour();
+//        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+//        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+//        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+//
+//    }
+//
+//
     @Test
     public void testTSP5() {
-        var x = new OrderHandler(9,11,2023);
+        var x = new OrderHandler(24,10,2023);
         x.fetchOrders();
-        var y = new PathBuilder(x.getAllOrders());
+        var y = new PathBuilder(x);
         y.buildGraph();
         y.doTour();
         FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
         DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
         DatabaseIO.writeFilepathDatabase(y.getFlightPath());
     }
+//
+//    @Test
+//    public void testA2022Orders() {
+//        var start  = LocalDate.of(2022,1,1);
+//        var end = LocalDate.of(2022,12,31);
+//        var dates = start.datesUntil(end).collect(Collectors.toList());
+//
+//        for (LocalDate date : dates) {
+//            var x = new OrderHandler(date.getDayOfMonth(),date.getMonthValue(),date.getYear());
+//            x.fetchOrders();
+//            var y = new PathBuilder(x);
+//            y.buildGraph();
+//            y.doTour();
+//            FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+//            DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+//            DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+//        }
+//    }
+//
+//    @Test
+//    public void testAllOrders() {
+//        var start  = LocalDate.of(2022,1,1);
+//        var end = LocalDate.of(2023,12,31);
+//        var dates = start.datesUntil(end).collect(Collectors.toList());
+//
+//        for (LocalDate date : dates) {
+//            var x = new OrderHandler(date.getDayOfMonth(),date.getMonthValue(),date.getYear());
+//            x.fetchOrders();
+//            var y = new PathBuilder(x);
+//            y.buildGraph();
+//            y.doTour();
+//            FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+//            DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+//            DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+//        }
+//    }
 
-    @Test
-    public void testYeet() {
-        var x = new aStarNode(0,0);
-
-        var y = new aStarNode(0,0);
-        var a = new PriorityQueue<aStarNode>();
-        a.add(x);
-        System.out.println(a.contains(y));
-        a.remove(y);
-        a.add(y);
-    }
 }

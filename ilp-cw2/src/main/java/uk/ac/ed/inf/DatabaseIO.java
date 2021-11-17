@@ -1,10 +1,11 @@
 package uk.ac.ed.inf;
 
 import java.sql.*;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 
+/**
+ * Stores common static methods and attributes for interacting with the database.
+ */
 public class DatabaseIO {
     private static final String DB_NAME = "derbyDB";
     private static final Config config = Config.getInstance();
@@ -12,6 +13,11 @@ public class DatabaseIO {
             config.getDbPort(), DB_NAME);
 
 
+    /**
+     * Write the given orders completed to the deliveries table.
+     * Existing table will be overwritten if it exists.
+     * @param orders that shall be written to the table.
+     */
     public static void writeDeliveriesTable(ArrayList<Order> orders) {
         try {
             Connection conn = DriverManager.getConnection(jdbcString);
@@ -39,10 +45,15 @@ public class DatabaseIO {
             }
 
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            System.err.println("Failed to write to database, table deliveries");
         }
     }
 
+    /**
+     * Write the flightpath into the Flightpath table.
+     * Existing table will be overwritten if it exists.
+     * @param dm collection of DroneMoves as the flightpath to write.
+     */
     public static void writeFilepathDatabase(ArrayList<DroneMove> dm) {
         try {
             Connection conn = DriverManager.getConnection(jdbcString);
@@ -76,7 +87,7 @@ public class DatabaseIO {
             }
 
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            System.err.println("Failed to write to database, table flightpath");
         }
     }
 }
