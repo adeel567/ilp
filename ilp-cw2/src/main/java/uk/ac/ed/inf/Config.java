@@ -18,9 +18,9 @@ public class Config {
     private Config(){}
 
     /**
-     * Get the instance of Config
-     * Will be created if it doesn't exist
-     * @return Config object
+     * Get the instance of Config.
+     * Will be created if it doesn't exist.
+     * @return Config object.
      */
     public static Config getInstance() {
         if(instance == null) {

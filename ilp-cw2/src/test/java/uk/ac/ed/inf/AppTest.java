@@ -3,6 +3,9 @@ package uk.ac.ed.inf;
 import org.junit.Test;
 
 
+import java.time.LocalDate;
+import java.util.stream.Collectors;
+
 import static org.junit.Assert.*;
 
 public class AppTest {
@@ -343,34 +346,34 @@ public class AppTest {
         DatabaseIO.writeFilepathDatabase(y.getFlightPath());
 
     }
+
+    @Test
+    public void testTSP3() {
+        var x = new OrderHandler(28,9,2023);
+        x.fetchOrders();
+        var y = new PathBuilder(x);
+        y.buildGraph();
+        y.doTour();
+        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+
+    }
 //
-//    @Test
-//    public void testTSP3() {
-//        var x = new OrderHandler(28,9,2023);
-//        x.fetchOrders();
-//        var y = new PathBuilder(x);
-//        y.buildGraph();
-//        y.doTour();
-//        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-//        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-//        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
-//
-//    }
-//
-//    @Test
-//    public void testTSP4() {
-//        var x = new OrderHandler(31,12,2023);
-//        x.fetchOrders();
-//        var y = new PathBuilder(x);
-//        y.buildGraph();
-//        y.doTour();
-//        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-//        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-//        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
-//
-//    }
-//
-//
+    @Test
+    public void testTSP4() {
+        var x = new OrderHandler(22,12,2023);
+        x.fetchOrders();
+        var y = new PathBuilder(x);
+        y.buildGraph();
+        y.doTour();
+        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+
+    }
+
+
     @Test
     public void testTSP5() {
         var x = new OrderHandler(24,10,2023);
@@ -418,5 +421,22 @@ public class AppTest {
 //            DatabaseIO.writeFilepathDatabase(y.getFlightPath());
 //        }
 //    }
+    @Test
+    public void submissionGeoJSONs() {
+        var start  = LocalDate.of(2022,1,1);
+        var end = LocalDate.of(2022,1,13);
+        var dates = start.datesUntil(end).collect(Collectors.toList());
+
+        var args = new String[5];
+        args[3] = "9898";
+        args[4] = "1527";
+
+        for (LocalDate date : dates) { //day matches month
+            args[0] = String.valueOf(date.getDayOfMonth());
+            args[1] = String.valueOf(date.getDayOfMonth());
+            args[2] = String.valueOf(date.getYear());
+            App.main(args);
+        }
+    }
 
 }

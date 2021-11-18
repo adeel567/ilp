@@ -6,7 +6,10 @@ import org.jgrapht.graph.*;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class PathBuilder {
+/**
+ * Takes a day's orders and constructs the optimal path for the drone to take.
+ */
+public class PathBuilder implements PathBuilderInterface {
 
     //constants for number of moves allowed and the location of drone's home.
     private static final int MOVES_ALLOWED = 1500;
@@ -34,7 +37,7 @@ public class PathBuilder {
 
 
     /**
-     * Class for constructing the optimal* delivery route for the day.
+     * Construct by providing today's orders of which to build best route for.
      * @param todaysOrders order handler for today's orders.
      */
     public PathBuilder(OrderHandler todaysOrders) {
@@ -50,6 +53,7 @@ public class PathBuilder {
      * The edges are weights calculated from the cost of the order to be completed and the total
      * distance from flying to the start point from current position until the end.
      */
+    @Override
     public void buildGraph(){
         var initialGraph = new SimpleDirectedWeightedGraph<String, tspEdge>(tspEdge.class);
 
@@ -157,6 +161,7 @@ public class PathBuilder {
      * moves of the drone are within the allowed limit we terminate, otherwise remove the
      * worst node and try again.
      */
+    @Override
     public void doTour() {
         //copy of graph is needed to delete and add vertexes.
         //as no underlying modification is being made, a shallow copy is all that is needed.
@@ -171,7 +176,6 @@ public class PathBuilder {
 
         while (movesUsed > MOVES_ALLOWED || curr.equals(start.getId())) {
             var whileGraph  = shallowCopyOf(preserveGraph);
-            System.out.println("NODES" + whileGraph.vertexSet().size());
             curr = start.getId();
             perms = new ArrayList<>();
 
@@ -183,6 +187,7 @@ public class PathBuilder {
                 perms.add(next);
             }
 
+            //make drone that flies route.
             var allStopsMade = allStopsMade(perms);
             var currentDrone = flightFromStopsMade(allStopsMade);
             flight = currentDrone.getFlightPath();
@@ -267,10 +272,11 @@ public class PathBuilder {
 
     /**
      * Build a drone and its route from the stops to be made on a day's orders.
+     * Will terminate early if moves are over what is allowed, so it may not visit all stops.
      * @param allStops stops to be made.
      * @return a Drone object with a completed flightpath.
      */
-    public Drone flightFromStopsMade(ArrayList<Stop> allStops) {
+    private Drone flightFromStopsMade(ArrayList<Stop> allStops) {
         var drone = new Drone(allStops.get(0).getCoordinates());
 
         for (int i = 1, allStopsSize = allStops.size()-1; i < allStopsSize; i++) {
@@ -308,6 +314,7 @@ public class PathBuilder {
      * Get which Orders will be delivered today.
      * @return all the Order objects from orderNos that will be delivered.
      */
+    @Override
     public ArrayList<Order> getOrdersDelivered() {
         var orders = new ArrayList<Order>();
         for (String s : ordersCompleted) {
@@ -316,18 +323,22 @@ public class PathBuilder {
         return orders;
     }
 
+    @Override
     public ArrayList<DroneMove> getFlightPath() {
         return this.flightPath;
     }
 
+    @Override
     public int getProfit() {
         return profitX;
     }
 
+    @Override
     public int getProfitLost() {
         return profitLostX;
     }
 
+    @Override
     public double getMonetaryValue() {
         return monetaryValue;
     }

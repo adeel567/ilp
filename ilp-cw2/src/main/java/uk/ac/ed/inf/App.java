@@ -1,5 +1,8 @@
 package uk.ac.ed.inf;
 
+/**
+ * Run complete Drone Delivery program.
+ */
 public class App {
 
     /**

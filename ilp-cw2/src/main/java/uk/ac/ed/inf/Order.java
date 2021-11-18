@@ -3,6 +3,9 @@ package uk.ac.ed.inf;
 import java.sql.*;
 import java.util.ArrayList;
 
+/**
+ * Class representing a drone delivery order.
+ */
 public class Order {
     private String orderNo;
     private ArrayList<String> orderItems;
@@ -12,6 +15,8 @@ public class Order {
     private String customer;
     private String What3Words;
     private double estimatedDistance;
+
+    private NoFlyZones nfz = NoFlyZones.getInstance();
 
     private final Menus myMenu = Menus.getInstance();
 
@@ -96,7 +101,9 @@ public class Order {
         for (int i = 0; i < allStops.size()-1; i++) {
             var x = allStops.get(i);
             var y = allStops.get(i+1);
-            dist += x.getCoordinates().tspHeuristic(y.getCoordinates());
+
+            var locDist = x.getCoordinates().tspHeuristic(y.getCoordinates());
+            dist += locDist;
         }
         return dist;
     }

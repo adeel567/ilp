@@ -71,7 +71,7 @@ public class Drone {
         if (currentLocation.closeTo(dest)) {
             doHover(); //if close to dest. then just hover for one move.
         } else {
-            var points = Pathfinding.routeTo(currentLocation, dest);
+            var points = new Pathfinding().routeTo(currentLocation, dest);
             this.commitMoves(points);
         }
 

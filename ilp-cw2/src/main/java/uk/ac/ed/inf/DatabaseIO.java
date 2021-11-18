@@ -9,7 +9,11 @@ import java.util.ArrayList;
 public class DatabaseIO {
     private static final String DB_NAME = "derbyDB";
     private static final Config config = Config.getInstance();
-    public static final String jdbcString = String.format("jdbc:derby://%s:%s/%s", config.getDbHost(),
+
+    /**
+     * String to make database connections to the Apache Derby database.
+     */
+    protected static final String jdbcString = String.format("jdbc:derby://%s:%s/%s", config.getDbHost(),
             config.getDbPort(), DB_NAME);
 
 

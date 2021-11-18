@@ -3,7 +3,10 @@ package uk.ac.ed.inf;
 import java.util.*;
 import java.util.List;
 
-public class Pathfinding {
+/**
+ * Class for calculating the optimal route between two points.
+ */
+public class Pathfinding implements PathfindingInterface {
     private static final int PATHFINDING_ANGLE_INCREMENT = 30;
     private static final NoFlyZones myNoFlyZones = NoFlyZones.getInstance();
 
@@ -17,7 +20,7 @@ public class Pathfinding {
      * @param target location to end 'close-to'
      * @return the final node, from which the route can be derived.
      */
-    private static PathfindingNode doAStar(PathfindingNode start, PathfindingNode target) {
+    private PathfindingNode doAStar(PathfindingNode start, PathfindingNode target) {
         PriorityQueue<PathfindingNode> openList = new PriorityQueue<>();
         PriorityQueue<PathfindingNode> closedList = new PriorityQueue<>();
         HashMap<LongLat, PathfindingNode> all = new HashMap<>();
@@ -79,9 +82,9 @@ public class Pathfinding {
      * Note: the start and end must be checked that they are not 'close'.
      * @param startLL location to start at
      * @param endLL   location to end 'close-to'
-     * @return a collection of
+     * @return a collection of Pathfinding nodes.
      */
-    public static List<PathfindingNode> routeTo(LongLat startLL, LongLat endLL) {
+    public List<PathfindingNode> routeTo(LongLat startLL, LongLat endLL) {
         assert !startLL.closeTo(endLL) : "Start and end are close";
 
         PathfindingNode start = new PathfindingNode(startLL.longitude, startLL.latitude);
