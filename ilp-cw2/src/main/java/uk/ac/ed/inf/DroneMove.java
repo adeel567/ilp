@@ -10,10 +10,10 @@ import java.util.List;
  * as required for the database.
  */
 public class DroneMove {
-    private LongLat from;
-    private LongLat to;
-    private int angle;
-    private String id;
+    private final LongLat from;
+    private final LongLat to;
+    private final int angle;
+    private final String id;
 
     /**
      * Create DroneMove from values as would be required in the output.
@@ -32,8 +32,8 @@ public class DroneMove {
             System.err.println("DRONE HOVER ILLEGAL");
             System.err.println(this);
 
-        } else if ((from.distanceTo(to) > LongLat.STRAIGHT_LINE_DISTANCE+1E-12) ||
-            (from.distanceTo(to) < LongLat.STRAIGHT_LINE_DISTANCE-1E-12) && angle!=LongLat.JUNK_ANGLE) {
+        } else if (((from.distanceTo(to) > LongLat.STRAIGHT_LINE_DISTANCE+1E-12) ||
+            (from.distanceTo(to) < LongLat.STRAIGHT_LINE_DISTANCE-1E-12)) && angle!=LongLat.JUNK_ANGLE) {
             System.err.println("DRONE MOVE POTENTIALLY ILLEGAL");
             System.err.println(this);
             System.err.println(from.distanceTo(to));
@@ -57,6 +57,10 @@ public class DroneMove {
         return this.angle;
     }
 
+    /**
+     * Override toString to be all relevant variables.
+     * @return String containging: orderNo, to coord, from coord, angle.
+     */
     @Override
     public String toString() {
         return (String.format("Job: %s, from: %s, to: %s, angle: %s", this.id, this.from,this.to,this.angle));
@@ -69,17 +73,17 @@ public class DroneMove {
      * @return a collection of Points
      */
     private static ArrayList<Point> movesToPath(ArrayList<DroneMove> dms) {
-        var lls = new ArrayList<Point>();
-        lls.add(dms.get(0).getFrom().toPoint());
-        lls.add(dms.get(0).getTo().toPoint());
+        var points = new ArrayList<Point>();
+        points.add(dms.get(0).getFrom().toPoint());
+        points.add(dms.get(0).getTo().toPoint());
 
         if (dms.size() > 1) {
             for (int i = 1, dmsSize = dms.size(); i < dmsSize; i++) {
                 DroneMove dm = dms.get(i);
-                lls.add(dm.getTo().toPoint());
+                points.add(dm.getTo().toPoint());
             }
         }
-        return lls;
+        return points;
     }
 
     /**
@@ -91,9 +95,7 @@ public class DroneMove {
         var feature = Feature.fromGeometry(
                 (Geometry) LineString.fromLngLats(path));
 
-        var fc = FeatureCollection.fromFeature(feature);
-        //System.out.println(fc.toJson());
-        return fc;
+        return FeatureCollection.fromFeature(feature);
     }
 
     /**

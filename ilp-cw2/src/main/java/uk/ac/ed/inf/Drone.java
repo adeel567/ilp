@@ -12,8 +12,6 @@ public class Drone {
     private LongLat currentLocation;
     private String currentOrderNo;
 
-    private final NoFlyZones myNoFlyZones = NoFlyZones.getInstance();
-
 
     /**
      * Create a drone by providing an initial location in LongLat form.
@@ -49,7 +47,7 @@ public class Drone {
      * @param y location to move to as LongLat.
      * @param angle angle of move being made.
      */
-    public void doMove(LongLat y, int angle) {
+    private void doMove(LongLat y, int angle) {
 
         var nextLocation = currentLocation.nextPosition(angle);
 
@@ -71,12 +69,12 @@ public class Drone {
         if (currentLocation.closeTo(dest)) {
             doHover(); //if close to dest. then just hover for one move.
         } else {
-            var points = Pathfinding.routeTo(currentLocation, dest);
+            var points = new Pathfinding().routeTo(currentLocation, dest);
             this.commitMoves(points);
         }
 
         if (!currentLocation.closeTo(dest)) {
-            System.err.println("LOCATION NOT CLOSE TO" + dest);
+            System.err.println("LOCATION POTENTIALLY NOT CLOSE TO" + dest);
         }
     }
 
@@ -92,31 +90,21 @@ public class Drone {
     }
 
     /**
-     * Takes the collection of nodes returned by A* and converts into usable DroneMoves
-     * which are added to the FlightPath. Checks for any possible issues.
+     * Takes the collection of nodes returned by A* or other algorithm and converts into usable DroneMoves
+     * which are added to the FlightPath.
+     * Checks for any possible issues.
      * @param path collection of A* nodes returned by A* algorithm.
      */
-    private void commitMoves(List<PathfindingNode> path) {
+    public void commitMoves(List<PathfindingNode> path) {
+        if (path.size()<=1) {
+            System.err.println("Pathfinding returned only position. Possible hover or no path is available");
+            System.exit(1);
+        }
+
         for (int i = 0; i < path.size() - 1; i++) {
             var x = path.get(i).asLongLat();
             var y = path.get(i + 1).asLongLat();
-            var ang = path.get(i+1).angle;
-
-            var expected = x.nextPosition(ang);
-
-            //check for any irregularities
-            var bad = (Math.abs(x.distanceTo(y) - x.distanceTo(expected))) >1E-12;
-            if (bad) {
-                System.err.println("Pathfinding move was illegal");
-                System.err.println("from " + x);
-                System.err.println("to: " + y);
-                System.err.println("ang: " + ang);
-                System.err.println("expected like: " + expected);
-                System.err.println(x.distanceTo(y));
-                System.err.println(x.distanceTo(expected));
-                System.err.println(x.distanceTo(y) - x.distanceTo(expected));
-            }
-
+            var ang = path.get(i + 1).getAngle();
             this.doMove(y,ang);
         }
     }
@@ -139,12 +127,17 @@ public class Drone {
         }
     }
 
+    /**
+     * Return flight path created.
+     * Outputs to console if there are any irregularities, useful for debugging.
+     * @return flight path as DroneMoves collection.
+     */
     public ArrayList<DroneMove> getFlightPath() {
-        validateFlightPath(); //do a sanity check before returning.
+        validateFlightPath(); //do a sanity check before returning. Testing reasons only.
         return this.flightPath;
     }
 
-    public int movesUsed() {
+    public int getMovesUsed() {
         return this.flightPath.size();
     }
 }

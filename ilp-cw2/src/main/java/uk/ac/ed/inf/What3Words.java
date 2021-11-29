@@ -17,7 +17,6 @@ public class What3Words {
         private static class coordinates {
             double lng;
             double lat;
-
         }
     }
 

@@ -9,8 +9,16 @@ import java.util.ArrayList;
 public class DatabaseIO {
     private static final String DB_NAME = "derbyDB";
     private static final Config config = Config.getInstance();
-    public static final String jdbcString = String.format("jdbc:derby://%s:%s/%s", config.getDbHost(),
-            config.getDbPort(), DB_NAME);
+
+
+    /**
+     * Generate string to connect to database with.
+     * @return connection string.
+     */
+    public static String getDBString() {
+        return String.format("jdbc:derby://%s:%s/%s", config.getDbHost(),
+                config.getDbPort(), DB_NAME);
+    }
 
 
     /**
@@ -20,7 +28,7 @@ public class DatabaseIO {
      */
     public static void writeDeliveriesTable(ArrayList<Order> orders) {
         try {
-            Connection conn = DriverManager.getConnection(jdbcString);
+            Connection conn = DriverManager.getConnection(getDBString());
             Statement statement = conn.createStatement();
             DatabaseMetaData databaseMetaData = conn.getMetaData();
             ResultSet resultSet = databaseMetaData.getTables(null,null,
@@ -44,7 +52,7 @@ public class DatabaseIO {
                 psDeliveries.execute();
             }
 
-        } catch (SQLException throwables) {
+        } catch (Exception e) {
             System.err.println("Failed to write to database, table deliveries");
         }
     }
@@ -56,7 +64,7 @@ public class DatabaseIO {
      */
     public static void writeFilepathDatabase(ArrayList<DroneMove> dm) {
         try {
-            Connection conn = DriverManager.getConnection(jdbcString);
+            Connection conn = DriverManager.getConnection(getDBString());
             Statement statement = conn.createStatement();
             DatabaseMetaData databaseMetaData = conn.getMetaData();
             ResultSet resultSet = databaseMetaData.getTables(null,null,
@@ -78,15 +86,15 @@ public class DatabaseIO {
                     "insert into flightpath values (?,?,?,?,?,?)");
             for (DroneMove droneMove : dm) {
                 psFlightpath.setString(1,droneMove.getId());
-                psFlightpath.setDouble(2,droneMove.getFrom().longitude);
-                psFlightpath.setDouble(3,droneMove.getFrom().latitude);
+                psFlightpath.setDouble(2, droneMove.getFrom().getLongitude());
+                psFlightpath.setDouble(3, droneMove.getFrom().getLatitude());
                 psFlightpath.setInt(4,droneMove.getAngle());
-                psFlightpath.setDouble(5,droneMove.getTo().longitude);
-                psFlightpath.setDouble(6,droneMove.getTo().latitude);
+                psFlightpath.setDouble(5, droneMove.getTo().getLongitude());
+                psFlightpath.setDouble(6, droneMove.getTo().getLatitude());
                 psFlightpath.execute();
             }
 
-        } catch (SQLException throwables) {
+        } catch (Exception e) {
             System.err.println("Failed to write to database, table flightpath");
         }
     }
