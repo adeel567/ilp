@@ -431,22 +431,22 @@ public class AppTest {
         DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
         DatabaseIO.writeFilepathDatabase(y.getFlightPath());
     }
-//
+
     @Test
     public void testA2022Orders() {
         var start  = LocalDate.of(2022,1,1);
-        var end = LocalDate.of(2022,12,31);
+        var end = LocalDate.of(2023,1,1);
         var dates = start.datesUntil(end).collect(Collectors.toList());
 
+        var args = new String[5];
+        args[3] = "9898";
+        args[4] = "1527";
+
         for (LocalDate date : dates) {
-            var x = new OrderHandler(date.getDayOfMonth(),date.getMonthValue(),date.getYear());
-            x.fetchOrders();
-            var y = new PathBuilder(x);
-            y.buildGraph();
-            y.doTour();
-            FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-            DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-            DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+            args[0] = String.valueOf(date.getDayOfMonth());
+            args[1] = String.valueOf(date.getMonthValue());
+            args[2] = String.valueOf(date.getYear());
+            App.main(args);
         }
     }
 
@@ -456,33 +456,34 @@ public class AppTest {
         var end = LocalDate.of(2024,1,1);
         var dates = start.datesUntil(end).collect(Collectors.toList());
 
+        var args = new String[5];
+        args[3] = "9898";
+        args[4] = "1527";
+
         for (LocalDate date : dates) {
-            var x = new OrderHandler(date.getDayOfMonth(),date.getMonthValue(),date.getYear());
-            x.fetchOrders();
-            var y = new PathBuilder(x);
-            y.buildGraph();
-            y.doTour();
-            FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-            DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-            DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+            args[0] = String.valueOf(date.getDayOfMonth());
+            args[1] = String.valueOf(date.getMonthValue());
+            args[2] = String.valueOf(date.getYear());
+            App.main(args);
         }
     }
-//    @Test
-//    public void submissionGeoJSONs() {
-//        var start  = LocalDate.of(2022,1,1);
-//        var end = LocalDate.of(2022,1,13);
-//        var dates = start.datesUntil(end).collect(Collectors.toList());
-//
-//        var args = new String[5];
-//        args[3] = "9898";
-//        args[4] = "1527";
-//
-//        for (LocalDate date : dates) { //day matches month
-//            args[0] = String.valueOf(date.getDayOfMonth());
-//            args[1] = String.valueOf(date.getDayOfMonth());
-//            args[2] = String.valueOf(date.getYear());
-//            App.main(args);
-//        }
-//    }
+
+    @Test
+    public void submissionGeoJSONs() {
+        var start  = LocalDate.of(2022,1,1);
+        var end = LocalDate.of(2022,1,13);
+        var dates = start.datesUntil(end).collect(Collectors.toList());
+
+        var args = new String[5];
+        args[3] = "9898";
+        args[4] = "1527";
+
+        for (LocalDate date : dates) { //day matches month
+            args[0] = String.valueOf(date.getDayOfMonth());
+            args[1] = String.valueOf(date.getDayOfMonth());
+            args[2] = String.valueOf(date.getYear());
+            App.main(args);
+        }
+    }
 
 }

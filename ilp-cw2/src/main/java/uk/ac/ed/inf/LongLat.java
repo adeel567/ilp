@@ -113,8 +113,8 @@ public class LongLat {
      * @return the heuristic calculated.
      */
     public Double flightHeuristic(LongLat destination) {
-        var x = 0.75;
-        var y = 1.25;
+        var x = 0.55;
+        var y = 1.60;
         return x*diagonalDistanceTo(destination) + y*distanceTo(destination);
     }
 
