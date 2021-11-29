@@ -14,6 +14,7 @@ public class FileIO {
 
     //prefix of file as a constant
     private static final String FILE_PREFIX = "drone";
+    private static final String FILE_SUFFIX = "geojson";
 
     /**
      * Writes a flightpath to a GEOJson file.
@@ -27,7 +28,7 @@ public class FileIO {
 
         Writer fileWriter = null;
         try {
-            fileWriter = new FileWriter(String.format("%s-%s.geojson", FILE_PREFIX,date.format(dtf)),
+            fileWriter = new FileWriter(String.format("%s-%s.%s", FILE_PREFIX,date.format(dtf),FILE_SUFFIX),
                     false);
             fileWriter.write(out.toJson());
 

@@ -25,8 +25,8 @@ public class Pathfinding implements PathfindingInterface {
         PriorityQueue<PathfindingNode> closedList = new PriorityQueue<>();
         HashMap<LongLat, PathfindingNode> all = new HashMap<>();
 
-        start.g = 0;
-        start.f = (start.g + start.flightHeuristic(target));
+        start.setG(0);
+        start.setF((start.getG() + start.flightHeuristic(target)));
         openList.add(start);
         all.put(start.asLongLat(), start);
 
@@ -41,7 +41,7 @@ public class Pathfinding implements PathfindingInterface {
                 var b = n.toPoint();
 
                 if (!myNoFlyZones.doesIntersectNoFly(a, b) && m.isConfined()) {
-                    double totalWeight = (n.g + LongLat.STRAIGHT_LINE_DISTANCE);
+                    double totalWeight = (n.getG() + LongLat.STRAIGHT_LINE_DISTANCE);
 
                     if (all.containsKey(m.asLongLat())) { //as DS is not a graph, need to check if node is new or not.
                         m = all.get(m.asLongLat());
@@ -50,16 +50,16 @@ public class Pathfinding implements PathfindingInterface {
                     }
 
                     if (!openList.contains(m) && !closedList.contains(m)) {
-                        m.parent = n;
-                        m.g = totalWeight;
-                        m.f = (m.g + m.flightHeuristic(target));
+                        m.setParent(n);
+                        m.setG(totalWeight);
+                        m.setF((m.getG() + m.flightHeuristic(target)));
                         openList.add(m);
 
                     } else {
-                        if (totalWeight < m.g) {
-                            m.parent = n;
-                            m.g = totalWeight;
-                            m.f = (m.g + m.flightHeuristic(target));
+                        if (totalWeight < m.getG()) {
+                            m.setParent(n);
+                            m.setG(totalWeight);
+                            m.setF((m.getG() + m.flightHeuristic(target)));
 
                             if (closedList.contains(m)) {
                                 closedList.remove(m);
@@ -79,23 +79,26 @@ public class Pathfinding implements PathfindingInterface {
     /**
      * Computes the best route from one LongLat to another.
      * Internally uses the A star algorithm.
-     * Note: the start and end must be checked that they are not 'close'.
+     * Note: the start and end should be checked that they are not 'close'.
+     * otherwise a Hover move is all that is needed.
      * @param startLL location to start at
      * @param endLL   location to end 'close-to'
      * @return a collection of Pathfinding nodes.
      */
     public List<PathfindingNode> routeTo(LongLat startLL, LongLat endLL) {
-        assert !startLL.closeTo(endLL) : "Start and end are close";
+        if (startLL.closeTo(endLL)) {
+            System.err.println("WARNING: START AND END ARE CLOSE");
+        }
 
-        PathfindingNode start = new PathfindingNode(startLL.longitude, startLL.latitude);
-        PathfindingNode end = new PathfindingNode(endLL.longitude, endLL.latitude);
+        PathfindingNode start = new PathfindingNode(startLL.getLongitude(), startLL.getLatitude());
+        PathfindingNode end = new PathfindingNode(endLL.getLongitude(), endLL.getLatitude());
 
         PathfindingNode n = doAStar(start, end);
 
         List<PathfindingNode> path = new ArrayList<>();
-        while (n.parent != null) {
+        while (n.getParent() != null) {
             path.add(n);
-            n = n.parent;
+            n = n.getParent();
         }
         path.add(n);
         Collections.reverse(path);

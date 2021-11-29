@@ -31,8 +31,8 @@ public class PathBuilder implements PathBuilderInterface {
     private final NoFlyZones myNoFlyZones = NoFlyZones.getInstance();
 
     //statistics
-    private int profitX;
-    private int profitLostX;
+    private int profit;
+    private int profitLost;
     private double monetaryValue;
 
 
@@ -67,7 +67,8 @@ public class PathBuilder implements PathBuilderInterface {
                     var ordX = todaysOrders.get(x);
                     var ordY = todaysOrders.get(y);
 
-                    var totalDist = ordY.getEstimatedDistance() + ordX.getDestination().tspHeuristic(ordY.getStart());
+                    var totalDist = ordY.getEstimatedDistance() +
+                            ordX.getDestinationCoords().tspHeuristic(ordY.getStartCoords());
                     var weight = totalDist/(double) ordY.getDeliveryCost();
 
                     addEdge(initialGraph, x, y, weight);
@@ -80,7 +81,8 @@ public class PathBuilder implements PathBuilderInterface {
             if (!y.equals(start.getId())) {
                 var ordY = todaysOrders.get(y);
 
-                var totalDist = ordY.getEstimatedDistance() + start.getCoordinates().tspHeuristic(ordY.getStart());
+                var totalDist = ordY.getEstimatedDistance() +
+                        start.getCoordinates().tspHeuristic(ordY.getStartCoords());
                 var weight = totalDist / (double) ordY.getDeliveryCost();
 
                 addEdge(initialGraph, start.getId(), y, weight);
@@ -114,7 +116,8 @@ public class PathBuilder implements PathBuilderInterface {
             if (!(x.equals(end.getId()) || x.equals(start.getId())) ) {
                 var ordX = todaysOrders.get(x);
 
-                var totalDist = ordX.getEstimatedDistance() + ordX.getDestination().tspHeuristic(end.getCoordinates());
+                var totalDist = ordX.getEstimatedDistance()
+                        + ordX.getDestinationCoords().tspHeuristic(end.getCoordinates());
                 var weight = totalDist/ (double) ordX.getDeliveryCost();
 
                 addEdge(g, x, end.getId(), weight);
@@ -151,6 +154,7 @@ public class PathBuilder implements PathBuilderInterface {
      */
     private String worstEndVert(SimpleDirectedWeightedGraph<String,tspEdge> g) {
         var x = g.getEdgeSource(Collections.max(g.incomingEdgesOf(end.getId())));
+        g.removeVertex(x);
         System.out.println("REMOVED: " + x);
         return x;
     }
@@ -165,9 +169,7 @@ public class PathBuilder implements PathBuilderInterface {
     public void doTour() {
         //copy of graph is needed to delete and add vertexes.
         //as no underlying modification is being made, a shallow copy is all that is needed.
-
-
-        var preserveGraph  = shallowCopyOf(originalGraph); //local copy of graph
+        var persistentGraph  = shallowCopyOf(originalGraph); //copy of graph
         var movesUsed = 0;
         ArrayList<String> perms = null;
         ArrayList<DroneMove> flight = null;
@@ -175,14 +177,14 @@ public class PathBuilder implements PathBuilderInterface {
         ArrayList<String> removed = new ArrayList<>();
 
         while (movesUsed > MOVES_ALLOWED || curr.equals(start.getId())) {
-            var whileGraph  = shallowCopyOf(preserveGraph);
+            var localGraph  = shallowCopyOf(persistentGraph);
             curr = start.getId();
             perms = new ArrayList<>();
 
-            while (hasNextEdge(whileGraph, curr)) { //keep doing if there are still edges to be visited
-                var nextEdge = greedyNextEdge(whileGraph, curr); //get next edge
-                var next = whileGraph.getEdgeTarget(nextEdge); //get next order
-                whileGraph.removeVertex(curr); //pop order as it's been visited
+            while (hasNextEdge(localGraph, curr)) { //keep doing if there are still edges to be visited
+                var nextEdge = greedyNextEdge(localGraph, curr); //get next edge
+                var next = localGraph.getEdgeTarget(nextEdge); //get next order
+                localGraph.removeVertex(curr); //pop order as it's been visited
                 curr = next;
                 perms.add(next);
             }
@@ -191,18 +193,18 @@ public class PathBuilder implements PathBuilderInterface {
             var allStopsMade = allStopsMade(perms);
             var currentDrone = flightFromStopsMade(allStopsMade);
             flight = currentDrone.getFlightPath();
-            movesUsed = currentDrone.movesUsed();
+            movesUsed = currentDrone.getMovesUsed();
 
-            if (movesUsed > MOVES_ALLOWED) { //prepare for next loop
+            if (movesUsed > MOVES_ALLOWED) { //prepare for next loop by removing orders from consideration
                 System.out.println("CURRENT PERM: "+ perms);
                 System.out.println("CURRENT MOVES USED " + movesUsed);
 
                 //get order that is 'worst' from end location, remove from the graph that will be used in next loop.
-                var fixEnds  = shallowCopyOf(preserveGraph); //reset to local copy
-                addEnd(fixEnds); //add edges to end location
-                removed.add(worstEndVert(fixEnds)); //get 'worst' and add to removed
+                var tempGraph  = shallowCopyOf(persistentGraph);
+                addEnd(tempGraph); //add edges to end location
+                removed.add(worstEndVert(tempGraph)); //get 'worst' and add to removed
 
-                preserveGraph.removeAllVertices(removed); //setup for next iteration by removing worst vertices
+                persistentGraph.removeAllVertices(removed); //setup for next iteration by removing worst vertices
             }
         }
 
@@ -210,13 +212,11 @@ public class PathBuilder implements PathBuilderInterface {
         System.out.println("FINAL " +perms.size()+ " PERMS " + perms);
         this.ordersCompleted = new ArrayList<>();
         this.ordersCompleted.addAll(perms);
-        this.ordersCompleted.remove(start.getId());
-        this.ordersCompleted.remove(end.getId());
 
         this.flightPath = flight;
 
-        this.profitX = calcProfit(perms);
-        this.profitLostX = calcProfitLost(removed);
+        this.profit = calcProfit(perms);
+        this.profitLost = calcProfitLost(removed);
         this.monetaryValue = calcMonetaryValue();
         System.out.println("MOVES TAKEN: " + flight.size());
     }
@@ -265,7 +265,7 @@ public class PathBuilder implements PathBuilderInterface {
     }
 
     private double calcMonetaryValue() {
-        var m =  (profitX/(double) (profitX+profitLostX));
+        var m =  (profit /(double) (profit + profitLost));
         System.out.printf("MONETARY VALUE: %.2f%n",m);
         return m;
     }
@@ -304,9 +304,9 @@ public class PathBuilder implements PathBuilderInterface {
         }
         test.add(end);
 
-//        for (Stop stop : test) {
-//            System.out.println(stop);
-//        }
+        for (Stop stop : test) {
+            //System.out.println(stop); //print all tests for debugging.
+        }
         return test;
     }
 
@@ -330,12 +330,12 @@ public class PathBuilder implements PathBuilderInterface {
 
     @Override
     public int getProfit() {
-        return profitX;
+        return profit;
     }
 
     @Override
     public int getProfitLost() {
-        return profitLostX;
+        return profitLost;
     }
 
     @Override

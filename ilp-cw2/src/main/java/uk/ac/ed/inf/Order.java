@@ -20,6 +20,12 @@ public class Order {
 
     private final Menus myMenu = Menus.getInstance();
 
+    /**
+     * Create an Order object using information from Orders database table.
+     * @param orderNo orderNo of order obtained.
+     * @param customer customer who order belongs to.
+     * @param deliverTo W3W of delivery location.
+     */
     public Order(String orderNo, String customer, String deliverTo) {
         this.customer = customer;
         this.orderNo = orderNo;
@@ -38,7 +44,7 @@ public class Order {
      */
     private ArrayList<String> fetchOrderItems(String orderNo){
         try {
-            Connection conn = DriverManager.getConnection(DatabaseIO.jdbcString);
+            Connection conn = DriverManager.getConnection(DatabaseIO.getDBString());
             final String itemsQuery = "select * from orderDetails where orderNo=(?)";
             PreparedStatement psItemsQuery = conn.prepareStatement(itemsQuery);
             psItemsQuery.setString(1,orderNo);
@@ -108,11 +114,11 @@ public class Order {
         return dist;
     }
 
-    public LongLat getStart() {
+    public LongLat getStartCoords() {
         return this.allStops.get(0).getCoordinates();
     }
 
-    public LongLat getDestination() {
+    public LongLat getDestinationCoords() {
         return this.allStops.get(this.allStops.size()-1).getCoordinates();
     }
 

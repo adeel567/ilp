@@ -11,12 +11,11 @@ import java.util.*;
 public class NoFlyZones {
 
     private static final String SERVER_PATH_TO_NFZ = "buildings/no-fly-zones.geojson";
-    private static final int PATHFINDING_ANGLE_INCREMENT = 30;
 
     private static uk.ac.ed.inf.NoFlyZones instance = null;
 
-    private FeatureCollection NoFlyZones;
-    private ArrayList<Polygon> NoFlyZonesPoly;
+    private final FeatureCollection NoFlyZones;
+    private final ArrayList<Polygon> NoFlyZonesPoly;
 
     /**
      * Uses a singleton pattern, so it has a private constructor.

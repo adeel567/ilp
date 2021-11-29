@@ -34,7 +34,7 @@ public class OrderHandler {
      */
     public void fetchOrders() {
         try {
-            Connection conn = DriverManager.getConnection(DatabaseIO.jdbcString);
+            Connection conn = DriverManager.getConnection(DatabaseIO.getDBString());
             final String ordersQuery = "select * from orders where deliveryDate=(?)";
             PreparedStatement psOrdersQuery = conn.prepareStatement(ordersQuery);
             psOrdersQuery.setString(1, date.format(DateTimeFormatter.ISO_LOCAL_DATE));
@@ -51,8 +51,14 @@ public class OrderHandler {
             this.orders = ordersList;
         } catch (SQLException throwables) {
             System.err.println("Error in accessing database");
+            System.exit(1);
         }
-        assert (this.orders.size() > 0) : "Warning: no orders available";
+
+        if (this.orders.size()<=0) {
+            System.err.println("Warning: no orders parsed");
+            System.exit(1);
+        }
+        System.out.println("TOTAL ORIGINAL COST: " + getTotalValue());
     }
 
     /**

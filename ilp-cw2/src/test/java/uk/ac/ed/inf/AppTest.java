@@ -56,8 +56,8 @@ public class AppTest {
 
 
     private boolean approxEq(LongLat l1, LongLat l2) {
-        return approxEq(l1.longitude, l2.longitude) &&
-                approxEq(l1.latitude, l2.latitude);
+        return approxEq(l1.getLongitude(), l2.getLongitude()) &&
+                approxEq(l1.getLatitude(), l2.getLatitude());
     }
 
     @Test
@@ -203,7 +203,10 @@ public class AppTest {
         drone.flyToLocation(end);
         var x = drone.getFlightPath();
         System.out.println(x.size());
-        System.out.println(DroneMove.getMovesAsFC(x).toJson()); }
+        System.out.println(DroneMove.getMovesAsFC(x).toJson());
+        assertTrue(x.get(x.size()-1).getTo().closeTo(end));
+    }
+
 
     @Test
     public void testRoute2() {
@@ -214,6 +217,7 @@ public class AppTest {
         drone.flyToLocation(end);
         var x = drone.getFlightPath();
         System.out.println(x.size());
+        assertTrue(x.get(x.size()-1).getTo().closeTo(end));
         System.out.println(DroneMove.getMovesAsFC(x).toJson()); }
 
     @Test
@@ -224,17 +228,25 @@ public class AppTest {
         drone.flyToLocation(end);
         var x = drone.getFlightPath();
         System.out.println(x.size());
-        System.out.println(DroneMove.getMovesAsFC(x).toJson()); }
+        assertTrue(x.get(x.size()-1).getTo().closeTo(end));
+        System.out.println(DroneMove.getMovesAsFC(x).toJson());
+        System.out.println(start.distanceTo(end)/LongLat.STRAIGHT_LINE_DISTANCE);
+        System.out.println(start.diagonalDistanceTo(end)/LongLat.STRAIGHT_LINE_DISTANCE);
+    }
 
     @Test
-    public void testRoute4() {
-        PathfindingNode start = new PathfindingNode(-3.191594,55.943658);
-        PathfindingNode end = new PathfindingNode(-3.186199,55.945734);
+    public void testRoute4() { //avoid NFZ greggs to cust
+        PathfindingNode start = new PathfindingNode(-3.1887, 55.9459);
+        PathfindingNode end = new PathfindingNode(-3.1893, 55.9434);
         Drone drone = new Drone(start);
         drone.flyToLocation(end);
         var x = drone.getFlightPath();
         System.out.println(x.size());
-        System.out.println(DroneMove.getMovesAsFC(x).toJson()); }
+        assertTrue(x.get(x.size()-1).getTo().closeTo(end));
+        System.out.println(DroneMove.getMovesAsFC(x).toJson());
+        System.out.println(start.distanceTo(end)/LongLat.STRAIGHT_LINE_DISTANCE);
+        System.out.println(start.tspHeuristic(end)/LongLat.STRAIGHT_LINE_DISTANCE);
+    }
 
     @Test
     public void testRoute5() {
@@ -244,39 +256,73 @@ public class AppTest {
         drone.flyToLocation(end);
         var x = drone.getFlightPath();
         System.out.println(x.size());
+        assertTrue(x.get(x.size()-1).getTo().closeTo(end));
         System.out.println(DroneMove.getMovesAsFC(x).toJson()); }
 //
     @Test
-    public void testRoute6() {
+    public void testRoute6() { //return 1 move.
         LongLat start = new LongLat(-3.1882, 55.9436);
         LongLat end = new LongLat(-3.1882, 55.9436+LongLat.STRAIGHT_LINE_DISTANCE+0.00000001);
         Drone drone = new Drone(start);
         drone.flyToLocation(end);
         var x = drone.getFlightPath();
         System.out.println(x.size());
-        System.out.println(DroneMove.getMovesAsFC(x).toJson()); }
+        System.out.println(DroneMove.getMovesAsFC(x).toJson());
+        assertEquals(x.size(),1);
+        assertNotEquals(x.get(0).getAngle(),LongLat.JUNK_ANGLE);
+        assertTrue(x.get(x.size()-1).getTo().closeTo(end));
+    }
 
-//
-//    @Test
-//    public void testRouteShortHover() {
-//        LongLat start = new LongLat(-3.1890,55.9452);
-//        LongLat end = new LongLat(-3.1890+0.00015*2,55.9452);
-//        NoFlyZones test = NoFlyZones.getInstance();
-//        var x = test.getRoute("JUNK",start, end);
-//        x.add(new DroneMove("JUNK",end,end, -999));
-//        System.out.println(x.size());
-//        var y = DroneMove.getMovesAsFC(x);
-//
-//        assertEquals(x.size(),3);
-//
-//    }
-//
-//    @Test
-//    public void testFetchOrders() {
-//        var x = new OrderHandler(31,12,2022);
-//        x.fetchOrders();
-//    }
-//
+    @Test
+    public void testRoute7() { //return hover
+        LongLat start = new LongLat(-3.1882, 55.9436);
+        LongLat end = new LongLat(-3.1882, 55.9436+LongLat.STRAIGHT_LINE_DISTANCE-0.00000001);
+        Drone drone = new Drone(start);
+        drone.flyToLocation(end);
+        var x = drone.getFlightPath();
+        System.out.println(x.size());
+        System.out.println(DroneMove.getMovesAsFC(x).toJson());
+        assertEquals(x.size(),1);
+        assertEquals(x.get(0).getAngle(),LongLat.JUNK_ANGLE);
+        assertTrue(x.get(x.size()-1).getTo().closeTo(end));
+    }
+
+    @Test
+    public void testRoute8() { //bottom left cut to top right.
+        LongLat start = new LongLat(-3.1861, 55.9447);
+        LongLat end = new LongLat(-3.1893, 55.9434);
+        Drone drone = new Drone(start);
+        drone.flyToLocation(end);
+        var x = drone.getFlightPath();
+        System.out.println(x.size());
+        System.out.println(DroneMove.getMovesAsFC(x).toJson());
+        System.out.println(start.distanceTo(end) / LongLat.STRAIGHT_LINE_DISTANCE);
+        assertEquals(x.size(), 23);
+        assertTrue(x.get(x.size()-1).getTo().closeTo(end));
+
+    }
+
+    @Test
+    public void testRoute9() { //Greggs to top right cut
+        LongLat start = new LongLat(-3.1913, 55.9456);
+        LongLat end = new LongLat(-3.1887, 55.9459);
+        Drone drone = new Drone(start);
+        drone.flyToLocation(end);
+        var x = drone.getFlightPath();
+        System.out.println(x.size());
+        System.out.println(DroneMove.getMovesAsFC(x).toJson());
+        System.out.println(start.distanceTo(end) / LongLat.STRAIGHT_LINE_DISTANCE);
+        assertEquals(x.size(), 17);
+        assertTrue(x.get(x.size()-1).getTo().closeTo(end));
+
+    }
+
+    @Test
+    public void testFetchOrders() {
+        var x = new OrderHandler(31,12,2022);
+        x.fetchOrders();
+    }
+
     @Test
     public void getWhichPickups() {
         var x =  Menus.getInstance();
@@ -303,13 +349,27 @@ public class AppTest {
         var x = new Order("c16220b9","s2283092", "surely.native.foal");
         assertEquals(x.getDestinationW3W(),"surely.native.foal");
         assertEquals(x.getOrderNo(),"c16220b9");
-        assertEquals(x.getStart(),new What3Words("looks.clouds.daring").getCoordinates());
+        assertEquals(x.getStartCoords(),new What3Words("looks.clouds.daring").getCoordinates());
     }
 
     @Test
     public void testTSP0() {
         var config = Config.getInstance();
-        var x = new OrderHandler(20,1,2022);
+        var x = new OrderHandler(25,1,2022);
+        x.fetchOrders();
+        var y = new PathBuilder(x);
+        y.buildGraph();
+        y.doTour();
+        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+
+    }
+
+    @Test
+    public void testTSP() {
+        var config = Config.getInstance();
+        var x = new OrderHandler(6,7,2023);
         x.fetchOrders();
         var y = new PathBuilder(x);
         y.buildGraph();
@@ -320,20 +380,6 @@ public class AppTest {
 
     }
 //
-//    @Test
-//    public void testTSP() {
-//        var config = Config.getInstance();
-//        var x = new OrderHandler(29,9,2023);
-//        x.fetchOrders();
-//        var y = new PathBuilder(x);
-//        y.buildGraph();
-//        y.doTour();
-//        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-//        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-//        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
-//
-//    }
-////
     @Test
     public void testTSP2() {
         var x = new OrderHandler(27,12,2023);
@@ -349,7 +395,7 @@ public class AppTest {
 
     @Test
     public void testTSP3() {
-        var x = new OrderHandler(28,9,2023);
+        var x = new OrderHandler(14,11,2023);
         x.fetchOrders();
         var y = new PathBuilder(x);
         y.buildGraph();
@@ -362,7 +408,7 @@ public class AppTest {
 //
     @Test
     public void testTSP4() {
-        var x = new OrderHandler(22,12,2023);
+        var x = new OrderHandler(24,10,2023);
         x.fetchOrders();
         var y = new PathBuilder(x);
         y.buildGraph();
@@ -376,7 +422,7 @@ public class AppTest {
 
     @Test
     public void testTSP5() {
-        var x = new OrderHandler(24,10,2023);
+        var x = new OrderHandler(31,12,2023);
         x.fetchOrders();
         var y = new PathBuilder(x);
         y.buildGraph();
@@ -386,57 +432,57 @@ public class AppTest {
         DatabaseIO.writeFilepathDatabase(y.getFlightPath());
     }
 //
-//    @Test
-//    public void testA2022Orders() {
-//        var start  = LocalDate.of(2022,1,1);
-//        var end = LocalDate.of(2022,12,31);
-//        var dates = start.datesUntil(end).collect(Collectors.toList());
-//
-//        for (LocalDate date : dates) {
-//            var x = new OrderHandler(date.getDayOfMonth(),date.getMonthValue(),date.getYear());
-//            x.fetchOrders();
-//            var y = new PathBuilder(x);
-//            y.buildGraph();
-//            y.doTour();
-//            FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-//            DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-//            DatabaseIO.writeFilepathDatabase(y.getFlightPath());
-//        }
-//    }
-//
-//    @Test
-//    public void testAllOrders() {
-//        var start  = LocalDate.of(2022,1,1);
-//        var end = LocalDate.of(2023,12,31);
-//        var dates = start.datesUntil(end).collect(Collectors.toList());
-//
-//        for (LocalDate date : dates) {
-//            var x = new OrderHandler(date.getDayOfMonth(),date.getMonthValue(),date.getYear());
-//            x.fetchOrders();
-//            var y = new PathBuilder(x);
-//            y.buildGraph();
-//            y.doTour();
-//            FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-//            DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-//            DatabaseIO.writeFilepathDatabase(y.getFlightPath());
-//        }
-//    }
     @Test
-    public void submissionGeoJSONs() {
+    public void testA2022Orders() {
         var start  = LocalDate.of(2022,1,1);
-        var end = LocalDate.of(2022,1,13);
+        var end = LocalDate.of(2022,12,31);
         var dates = start.datesUntil(end).collect(Collectors.toList());
 
-        var args = new String[5];
-        args[3] = "9898";
-        args[4] = "1527";
-
-        for (LocalDate date : dates) { //day matches month
-            args[0] = String.valueOf(date.getDayOfMonth());
-            args[1] = String.valueOf(date.getDayOfMonth());
-            args[2] = String.valueOf(date.getYear());
-            App.main(args);
+        for (LocalDate date : dates) {
+            var x = new OrderHandler(date.getDayOfMonth(),date.getMonthValue(),date.getYear());
+            x.fetchOrders();
+            var y = new PathBuilder(x);
+            y.buildGraph();
+            y.doTour();
+            FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+            DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+            DatabaseIO.writeFilepathDatabase(y.getFlightPath());
         }
     }
+
+    @Test
+    public void testAllOrders() {
+        var start  = LocalDate.of(2023,1,1);
+        var end = LocalDate.of(2024,1,1);
+        var dates = start.datesUntil(end).collect(Collectors.toList());
+
+        for (LocalDate date : dates) {
+            var x = new OrderHandler(date.getDayOfMonth(),date.getMonthValue(),date.getYear());
+            x.fetchOrders();
+            var y = new PathBuilder(x);
+            y.buildGraph();
+            y.doTour();
+            FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+            DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+            DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+        }
+    }
+//    @Test
+//    public void submissionGeoJSONs() {
+//        var start  = LocalDate.of(2022,1,1);
+//        var end = LocalDate.of(2022,1,13);
+//        var dates = start.datesUntil(end).collect(Collectors.toList());
+//
+//        var args = new String[5];
+//        args[3] = "9898";
+//        args[4] = "1527";
+//
+//        for (LocalDate date : dates) { //day matches month
+//            args[0] = String.valueOf(date.getDayOfMonth());
+//            args[1] = String.valueOf(date.getDayOfMonth());
+//            args[2] = String.valueOf(date.getYear());
+//            App.main(args);
+//        }
+//    }
 
 }

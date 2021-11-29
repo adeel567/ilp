@@ -6,10 +6,10 @@ import java.util.ArrayList;
  * An expansion of LongLat for use in the A* pathfinding.
  */
 public class PathfindingNode extends LongLat implements Comparable<PathfindingNode> {
-    protected double f = Double.MAX_VALUE;
-    protected double g = Double.MAX_VALUE;
-    protected int angle;
-    protected PathfindingNode parent;
+    private double f = Double.MAX_VALUE;
+    private double g = Double.MAX_VALUE;
+    private int angle;
+    private PathfindingNode parent;
 
     /**
      * Create using longitude and latitude, like its parent, LongLat.
@@ -30,7 +30,7 @@ public class PathfindingNode extends LongLat implements Comparable<PathfindingNo
         ArrayList<PathfindingNode> neighbours = new ArrayList<>();
         for (int i = LongLat.MIN_ANGLE; i<= LongLat.MAX_ANGLE; i+=inc) {
             var x = this.nextPosition(i);
-            x.angle = i;
+            x.setAngle(i);
             neighbours.add(x);
         }
         return neighbours;
@@ -42,10 +42,8 @@ public class PathfindingNode extends LongLat implements Comparable<PathfindingNo
      * @return a LongLat of the location of node.
      */
     public LongLat asLongLat() {
-        return new LongLat(this.longitude, this.latitude);
-
+        return new LongLat(this.getLongitude(), this.getLatitude());
     }
-
 
     /**
      * Two nodes are equal when they have same location, f, and g.
@@ -63,8 +61,8 @@ public class PathfindingNode extends LongLat implements Comparable<PathfindingNo
         }
 
         final PathfindingNode other = (PathfindingNode) obj;
-        return this.longitude == other.longitude && this.latitude == other.latitude
-                && this.f == other.f && this.g == other.g;
+        return this.getLongitude() == other.getLongitude() && this.getLatitude() == other.getLatitude()
+                && this.getF() == other.getF() && this.getG() == other.getG();
     }
 
     /**
@@ -74,7 +72,7 @@ public class PathfindingNode extends LongLat implements Comparable<PathfindingNo
      */
     @Override
     public int compareTo(PathfindingNode o) {
-        return Double.compare(this.f, o.f);    }
+        return Double.compare(this.getF(), o.getF());    }
 
     /**
      * Generate a new node for new location after a move by angle.
@@ -84,11 +82,47 @@ public class PathfindingNode extends LongLat implements Comparable<PathfindingNo
     @Override
     public PathfindingNode nextPosition(int angle) {
         LongLat x = super.nextPosition(angle);
-        return new PathfindingNode(x.longitude, x.latitude);
+        return new PathfindingNode(x.getLongitude(), x.getLatitude());
     }
 
+    /**
+     * Override toString by appending toString of super with f and g weights.
+     * @return String representation of a node.
+     */
     @Override
     public String toString(){
-        return super.toString() + " f: " + f + " g: " +g;
+        return super.toString() + " f: " + getF() + " g: " + getG();
+    }
+
+    public double getF() {
+        return f;
+    }
+
+    public void setF(double f) {
+        this.f = f;
+    }
+
+    public double getG() {
+        return g;
+    }
+
+    public void setG(double g) {
+        this.g = g;
+    }
+
+    public int getAngle() {
+        return angle;
+    }
+
+    public void setAngle(int angle) {
+        this.angle = angle;
+    }
+
+    public PathfindingNode getParent() {
+        return parent;
+    }
+
+    public void setParent(PathfindingNode parent) {
+        this.parent = parent;
     }
 }

@@ -24,11 +24,9 @@ public class LongLat {
     protected static final int JUNK_ANGLE = -999;
     protected static final int ANGLE_INTERVAL = 10;
 
-
-    /** Stores the longitude of current location */
-    public final double longitude;
-    /** Stores the latitude of current location */
-    public final double latitude;
+    //coordinates
+    private final double longitude;
+    private final double latitude;
 
     /**
      * Create a LongLat object by passing values for longitude and latitude respectively.
@@ -46,8 +44,8 @@ public class LongLat {
      * @return true if it is within the confined area.
      */
     public boolean isConfined() {
-        return (this.latitude < CONFINEMENT_LATITUDE_NORTH && this.latitude > CONFINEMENT_LATITUDE_SOUTH &&
-                this.longitude > CONFINEMENT_LONGITUDE_WEST && this.longitude < CONFINEMENT_LONGITUDE_EAST);
+        return (this.getLatitude() < CONFINEMENT_LATITUDE_NORTH && this.getLatitude() > CONFINEMENT_LATITUDE_SOUTH &&
+                this.getLongitude() > CONFINEMENT_LONGITUDE_WEST && this.getLongitude() < CONFINEMENT_LONGITUDE_EAST);
     }
 
     /**
@@ -56,8 +54,8 @@ public class LongLat {
      * @return the magnitude of the distance in degrees.
      */
     public double distanceTo(LongLat destination) {
-        return (Math.sqrt(Math.pow(this.longitude - destination.longitude, 2) +
-                Math.pow(this.latitude - destination.latitude, 2)));
+        return (Math.sqrt(Math.pow(this.getLongitude() - destination.getLongitude(), 2) +
+                Math.pow(this.getLatitude() - destination.getLatitude(), 2)));
     }
 
     /**
@@ -79,12 +77,12 @@ public class LongLat {
      */
     public LongLat nextPosition(int angle) {
         if (angle >= MIN_ANGLE && angle <= MAX_ANGLE && angle % ANGLE_INTERVAL == 0) {
-            double newLongitude = this.longitude + (Math.cos(Math.toRadians(angle)) * STRAIGHT_LINE_DISTANCE);
-            double newLatitude = this.latitude + (Math.sin(Math.toRadians(angle)) * STRAIGHT_LINE_DISTANCE);
+            double newLongitude = this.getLongitude() + (Math.cos(Math.toRadians(angle)) * STRAIGHT_LINE_DISTANCE);
+            double newLatitude = this.getLatitude() + (Math.sin(Math.toRadians(angle)) * STRAIGHT_LINE_DISTANCE);
             return new LongLat(newLongitude, newLatitude);
 
         } else if (angle == JUNK_ANGLE){
-            return new LongLat(this.longitude, this.latitude);
+            return new LongLat(this.getLongitude(), this.getLatitude());
         }
         throw new IllegalArgumentException("Angle given is out of bounds.");
     }
@@ -94,7 +92,7 @@ public class LongLat {
      * @return this LongLat as a Point
      */
     public Point toPoint() {
-        return Point.fromLngLat(this.longitude,this.latitude);
+        return Point.fromLngLat(this.getLongitude(), this.getLatitude());
     }
 
     /**
@@ -103,8 +101,8 @@ public class LongLat {
      * @return the magnitude of the distance in degrees.
      */
     public double diagonalDistanceTo(LongLat destination) {
-        var dx = Math.abs(this.longitude - destination.longitude);
-        var dy = Math.abs(this.latitude - destination.latitude);
+        var dx = Math.abs(this.getLongitude() - destination.getLongitude());
+        var dy = Math.abs(this.getLatitude() - destination.getLatitude());
         return (dx + dy);
 
     }
@@ -145,20 +143,36 @@ public class LongLat {
         }
 
         final LongLat other = (LongLat) obj;
-        return this.longitude == other.longitude && this.latitude == other.latitude;
+        return this.getLongitude() == other.getLongitude() && this.getLatitude() == other.getLatitude();
     }
 
+    /**
+     * Override hashcode due to change in equals
+     * @return hashcode for this LongLat
+     */
     @Override
     public int hashCode() {
         int result = 0;
-        result = 31*result + (Double.hashCode(longitude));
-        result = 31*result + (Double.hashCode(latitude));
+        result = 31*result + (Double.hashCode(getLongitude()));
+        result = 31*result + (Double.hashCode(getLatitude()));
         return result;
     }
 
+    /**
+     * Override toString as the longitudes and latitudes.
+     * @return string printable representation of LongLat with coordinates.
+     */
     @Override
     public String toString() {
-        return String.format("%s,%s",this.longitude,this.latitude);
+        return String.format("%s,%s", this.getLongitude(), this.getLatitude());
     }
 
+    public double getLongitude() {
+        return longitude;
+    }
+
+
+    public double getLatitude() {
+        return latitude;
+    }
 }
