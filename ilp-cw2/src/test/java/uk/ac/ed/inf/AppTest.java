@@ -452,7 +452,7 @@ public class AppTest {
 
     @Test
     public void testAllOrders() {
-        var start  = LocalDate.of(2023,1,1);
+        var start  = LocalDate.of(2022,1,1);
         var end = LocalDate.of(2024,1,1);
         var dates = start.datesUntil(end).collect(Collectors.toList());
 
