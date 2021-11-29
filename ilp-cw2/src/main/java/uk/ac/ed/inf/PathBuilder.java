@@ -69,9 +69,9 @@ public class PathBuilder implements PathBuilderInterface {
 
                     var totalDist = ordY.getEstimatedDistance() +
                             ordX.getDestinationCoords().tspHeuristic(ordY.getStartCoords());
-                    var weight = totalDist/(double) ordY.getDeliveryCost();
+                    var cost = (double) ordY.getDeliveryCost();
 
-                    addEdge(initialGraph, x, y, weight);
+                    addEdge(initialGraph, x, y, totalDist, cost);
                 }
             }
         }
@@ -83,22 +83,25 @@ public class PathBuilder implements PathBuilderInterface {
 
                 var totalDist = ordY.getEstimatedDistance() +
                         start.getCoordinates().tspHeuristic(ordY.getStartCoords());
-                var weight = totalDist / (double) ordY.getDeliveryCost();
+                var cost =  (double) ordY.getDeliveryCost();
 
-                addEdge(initialGraph, start.getId(), y, weight);
+                addEdge(initialGraph, start.getId(), y, totalDist, cost);
             }
         }
         this.originalGraph = initialGraph;
     }
 
     /**
-     * Add edge to graph
+     * Add edge to graph.
      * @param g directed weighted graph
      * @param x from node
      * @param y to node
-     * @param weight weight between the two nodes
+     * @param mini term to minimise in weight calculation.
+     * @param maxi term to maximise in weight calculation.
      */
-    private void addEdge(SimpleDirectedWeightedGraph<String, tspEdge> g, String x, String y, double weight) {
+    private void addEdge(SimpleDirectedWeightedGraph<String, tspEdge> g, String x, String y, double mini, double maxi) {
+        var weight = mini/maxi;
+
         var edge = new tspEdge(weight);
         g.addEdge(x, y, edge);
         g.setEdgeWeight(edge, weight);
@@ -118,9 +121,9 @@ public class PathBuilder implements PathBuilderInterface {
 
                 var totalDist = ordX.getEstimatedDistance()
                         + ordX.getDestinationCoords().tspHeuristic(end.getCoordinates());
-                var weight = totalDist/ (double) ordX.getDeliveryCost();
+                var cost =  (double) ordX.getDeliveryCost();
 
-                addEdge(g, x, end.getId(), weight);
+                addEdge(g, x, end.getId(), totalDist, cost);
             }
         }
     }
@@ -303,10 +306,6 @@ public class PathBuilder implements PathBuilderInterface {
             test.addAll(this.todaysOrders.get(job).getAllStops());
         }
         test.add(end);
-
-        for (Stop stop : test) {
-            //System.out.println(stop); //print all tests for debugging.
-        }
         return test;
     }
 
