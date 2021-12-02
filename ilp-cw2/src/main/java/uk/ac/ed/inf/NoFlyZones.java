@@ -1,20 +1,27 @@
 package uk.ac.ed.inf;
 
-import com.mapbox.geojson.*;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Point;
+import com.mapbox.geojson.Polygon;
 
 import java.awt.geom.Line2D;
-import java.util.*;
+import java.util.ArrayList;
 
 /**
  * Class for parsing and interacting with the no fly zones.
  */
 public class NoFlyZones {
 
+    /** Constant for the path on server where no-fly zone can be found */
     private static final String SERVER_PATH_TO_NFZ = "buildings/no-fly-zones.geojson";
 
-    private static uk.ac.ed.inf.NoFlyZones instance = null;
+    /** Pointer to instance */
+    private static NoFlyZones instance = null;
 
+    /** Parsed no-fly zones as a FeatureCollection */
     private final FeatureCollection NoFlyZones;
+
+    /** Parsed no-fly zones as Polygons for use in edge detection */
     private final ArrayList<Polygon> NoFlyZonesPoly;
 
     /**
@@ -28,6 +35,7 @@ public class NoFlyZones {
     /**
      * Get the instance of NFZ
      * Will be created if it doesn't exist
+     *
      * @return NoFlyZones object
      */
     public static NoFlyZones getInstance() {
@@ -39,6 +47,7 @@ public class NoFlyZones {
 
     /**
      * Connects to server as given in config to retrieve the NoFlyZone
+     *
      * @return FeatureCollection of NoFlyZones from JSON
      */
     private FeatureCollection fetchNoFlyZones() {
@@ -51,6 +60,7 @@ public class NoFlyZones {
     /**
      * Parses already fetched NoFlyZone into a collection of Polygons.
      * Used for checking intersections.
+     *
      * @return a collection (arraylist) of Polygons.
      */
     private ArrayList<Polygon> fetchNoFlyZonesPolygons() {
@@ -65,7 +75,8 @@ public class NoFlyZones {
 
     /**
      * Checks if the line formed by two points intersects any member of the NoFlyZone.
-     * @param start point of current location
+     *
+     * @param start       point of current location
      * @param destination point of desired destination
      * @return true if the move (line formed) would intersect the NoFlyZone
      */

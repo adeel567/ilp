@@ -16,7 +16,7 @@ public class AppTest {
     private final LongLat appletonTower = new LongLat(-3.186874, 55.944494);
     private final LongLat businessSchool = new LongLat(-3.1873,55.9430);
     private final LongLat greyfriarsKirkyard = new LongLat(-3.1928,55.9469);
-//
+
 //    @Test
 //    public void testIsConfinedTrueA(){
 //        assertTrue(appletonTower.isConfined());
@@ -193,31 +193,30 @@ public class AppTest {
 //        // Don't forget the standard delivery charge of 50p
 //        assertEquals(4 * 460 + 50, totalCost);
 //    }
-
-    @Test
-    public void d1() {
-        var drone = new Drone(businessSchool);
-        drone.flyToStop(new Stop("test", appletonTower,"101")); //10moves
-        drone.doHover();
-        drone.doHover();
+//
+//    @Test
+//    public void testRollback() {
+//        var drone = new Drone(businessSchool);
+//        drone.flyToStop(new Stop("test", appletonTower,"101")); //10moves
+//        drone.flyToStop(new Stop("test", businessSchool,"101"));
+//        drone.doHover();
 //        System.out.println(drone.getFlightPath().size());
-        drone.flyToStop(new Stop("test", businessSchool,"101"));
-        drone.doHover();
-        System.out.println(drone.getFlightPath().size());
-        drone.flyToStop(new Stop("test2",appletonTower,"102"));
-        drone.doHover();
-        System.out.println(drone.getFlightPath().size());
-        drone.flyToStop(new Stop("test3",businessSchool,"101"));
-        System.out.println(drone.getFlightPath().size());
-
-
-        System.out.println("\n");
-        drone.rollbackOrder();
-        System.out.println(drone.getFlightPath().size());
-        drone.rollbackOrder();
-        System.out.println(drone.getFlightPath().size());
-    }
-
+//        drone.flyToStop(new Stop("test2",appletonTower,"102"));
+//        System.out.println(drone.getFlightPath().size());
+//        System.out.println(drone.getFlightPath());
+//        drone.flyToStop(new Stop("test3",businessSchool,"103"));
+//        System.out.println(drone.getFlightPath().size());
+//
+//        System.out.println("\n");
+//        drone.rollbackOrder();
+//        System.out.println(drone.getFlightPath().size());
+//        drone.rollbackOrder();
+//        System.out.println(drone.getFlightPath().size());
+//        drone.rollbackOrder();
+//        System.out.println(drone.getFlightPath().size());
+//        assertEquals(drone.getCurrentLocation(),businessSchool);
+//    }
+//
 //    @Test
 //    public void testRoute1() {
 //        LongLat start = new LongLat(-3.1880, 55.9461);
@@ -254,7 +253,7 @@ public class AppTest {
 //        assertTrue(x.get(x.size()-1).getTo().closeTo(end));
 //        System.out.println(DroneMove.getMovesAsFC(x).toJson());
 //        System.out.println(start.distanceTo(end)/LongLat.STRAIGHT_LINE_DISTANCE);
-//        System.out.println(start.diagonalDistanceTo(end)/LongLat.STRAIGHT_LINE_DISTANCE);
+//        System.out.println(start.manhattanDistanceTo(end)/LongLat.STRAIGHT_LINE_DISTANCE);
 //    }
 //
 //    @Test
@@ -406,18 +405,18 @@ public class AppTest {
 //
 //    }
 //
-    @Test
-    public void testTSP2() {
-        var x = new OrderHandler(27,12,2023);
-        x.fetchOrders();
-        var y = new PathBuilder(x);
-        y.buildGraph();
-        y.doTour();
-        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
-
-    }
+//    @Test
+//    public void testTSP2() {
+//        var x = new OrderHandler(13,12,2023);
+//        x.fetchOrders();
+//        var y = new PathBuilder(x);
+//        y.buildGraph();
+//        y.doTour();
+//        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+//        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+//        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+//
+//    }
 //
 //    @Test
 //    public void testTSP3() {
@@ -476,23 +475,23 @@ public class AppTest {
 //        }
 //    }
 //
-    @Test
-    public void testAllOrders() {
-        var start  = LocalDate.of(2022,1,1);
-        var end = LocalDate.of(2024,1,1);
-        var dates = start.datesUntil(end).collect(Collectors.toList());
-
-        var args = new String[5];
-        args[3] = "9898";
-        args[4] = "1527";
-
-        for (LocalDate date : dates) {
-            args[0] = String.valueOf(date.getDayOfMonth());
-            args[1] = String.valueOf(date.getMonthValue());
-            args[2] = String.valueOf(date.getYear());
-            App.main(args);
-        }
-    }
+//    @Test
+//    public void testAllOrders() {
+//        var start  = LocalDate.of(2022,1,1);
+//        var end = LocalDate.of(2024,1,1);
+//        var dates = start.datesUntil(end).collect(Collectors.toList());
+//
+//        var args = new String[5];
+//        args[3] = "9898";
+//        args[4] = "1527";
+//
+//        for (LocalDate date : dates) {
+//            args[0] = String.valueOf(date.getDayOfMonth());
+//            args[1] = String.valueOf(date.getMonthValue());
+//            args[2] = String.valueOf(date.getYear());
+//            App.main(args);
+//        }
+//    }
 //
 //    @Test
 //    public void submissionGeoJSONs() {

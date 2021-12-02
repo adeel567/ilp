@@ -19,6 +19,7 @@ public interface PathBuilderInterface {
 
     /**
      * Get which Orders will be delivered today.
+     *
      * @return all the Order objects that will be delivered.
      */
     ArrayList<Order> getOrdersDelivered();

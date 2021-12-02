@@ -9,6 +9,7 @@ public class Shop {
     String location;
 
     Menu[] menu;
+
     public static class Menu {
         String item;
         int pence;
