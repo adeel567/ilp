@@ -92,8 +92,8 @@ public class Order {
 
         ArrayList<Stop> allStops = new ArrayList<>();
         for (Shop shop : unorderedShops) {
-            var coords = new What3Words(shop.location).getCoordinates();
-            var s = new Stop(shop.name, coords, this.orderNo);
+            var coords = new What3Words(shop.getLocation()).getCoordinates();
+            var s = new Stop(shop.getName(), coords, this.orderNo);
             allStops.add(s);
         }
         allStops.add(new Stop(this.customer, this.destination, this.orderNo));

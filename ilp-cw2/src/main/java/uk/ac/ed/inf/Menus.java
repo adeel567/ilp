@@ -93,8 +93,8 @@ public class Menus {
         HashMap<String, Integer> itemPrices = new HashMap<>(); //allows for O(1) lookups
 
         for (Shop shop : this.shops) {
-            for (Shop.Menu menu : shop.menu) {
-                itemPrices.put(menu.item, menu.pence); //store all values once
+            for (Shop.Menu menu : shop.getMenu()) {
+                itemPrices.put(menu.getItem(), menu.getPence()); //store all values once
             }
         }
         return itemPrices;
@@ -124,8 +124,8 @@ public class Menus {
     private HashMap<String, Shop> getItemStops() {
         HashMap<String, Shop> itemStops = new HashMap<>();
         for (Shop shop : this.shops) {
-            for (Shop.Menu menu : shop.menu) {
-                itemStops.put(menu.item, shop); //store all values once
+            for (Shop.Menu menu : shop.getMenu()) {
+                itemStops.put(menu.getItem(), shop); //store all values once
             }
         }
         return itemStops;
