@@ -205,7 +205,11 @@ public class PathBuilder implements PathBuilderInterface {
                 //get order that is 'worst' from end location, remove from the graph that will be used in next loop.
                 var tempGraph  = shallowCopyOf(persistentGraph);
                 addEnd(tempGraph); //add edges to end location
-                removed.add(worstEndVert(tempGraph)); //get 'worst' and add to removed
+
+                var momentum = Math.ceil((movesUsed-MOVES_ALLOWED)/(double) 125); //how many to remove
+                for (int i = 0; i<momentum; i++) {
+                    removed.add(worstEndVert(tempGraph)); //get 'worst' and add to removed
+                }
 
                 persistentGraph.removeAllVertices(removed); //setup for next iteration by removing worst vertices
             }

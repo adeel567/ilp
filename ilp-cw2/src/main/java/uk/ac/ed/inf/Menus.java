@@ -66,13 +66,13 @@ public class Menus {
      * @param items' which have been ordered
      * @return the set of shops for these items.
      */
-    public ArrayList<Shop> getDeliveryShops(String... items) {
+    public Set<Shop> getDeliveryShops(String... items) {
         Set<Shop> stops = new HashSet<>();
         for (String itemName: items) {
             stops.add(itemStops.get(itemName));
         }
 
-        return new ArrayList<Shop>(stops);
+        return stops;
 
     }
 

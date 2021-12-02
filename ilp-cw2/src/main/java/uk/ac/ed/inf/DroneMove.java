@@ -101,7 +101,7 @@ public class DroneMove {
     /**
      * Takes a collection of DroneMoves and turns them into a FeatureCollection.
      * @param dms a collection of DroneMoves.
-     * @return a FeatureCollection of the giben DroneMoves.
+     * @return a FeatureCollection of the given DroneMoves.
      */
     public static FeatureCollection getMovesAsFC(ArrayList<DroneMove> dms) {
         var x = movesToPath(dms);

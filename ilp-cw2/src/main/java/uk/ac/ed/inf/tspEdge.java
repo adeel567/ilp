@@ -7,6 +7,10 @@ public class tspEdge implements Comparable<tspEdge> {
 
     private double weight;
 
+    /**
+     * Initialise a new edge by setting its weight.
+     * @param weight of the edge.
+     */
     public tspEdge(double weight) {
         this.weight = weight;
     }

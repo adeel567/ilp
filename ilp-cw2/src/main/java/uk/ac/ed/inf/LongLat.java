@@ -100,7 +100,7 @@ public class LongLat {
      * @param destination the 'to' location for which distance is to be calculated.
      * @return the magnitude of the distance in degrees.
      */
-    public double diagonalDistanceTo(LongLat destination) {
+    public double manhattanDistanceTo(LongLat destination) {
         var dx = Math.abs(this.getLongitude() - destination.getLongitude());
         var dy = Math.abs(this.getLatitude() - destination.getLatitude());
         return (dx + dy);
@@ -115,7 +115,7 @@ public class LongLat {
     public Double flightHeuristic(LongLat destination) {
         var x = 0.55;
         var y = 1.60;
-        return x*diagonalDistanceTo(destination) + y*distanceTo(destination);
+        return x*manhattanDistanceTo(destination) + y*distanceTo(destination);
     }
 
     /**
@@ -124,7 +124,7 @@ public class LongLat {
      * @return the heuristic calculated.
      */
     public Double tspHeuristic(LongLat target) {
-        return diagonalDistanceTo(target);
+        return manhattanDistanceTo(target);
     }
 
     /**
