@@ -162,71 +162,76 @@ public class PathBuilder implements PathBuilderInterface {
         return x;
     }
 
-    /**
-     * Construct a tour of the orders by going from the start and greedily picking the best
-     * next order. Once all orders have been added, construct a drone to fly over. if the
-     * moves of the drone are within the allowed limit we terminate, otherwise remove the
-     * worst node and try again.
-     */
     @Override
     public void doTour() {
-        //copy of graph is needed to delete and add vertexes.
-        //as no underlying modification is being made, a shallow copy is all that is needed.
-        var persistentGraph  = shallowCopyOf(originalGraph); //copy of graph
         var movesUsed = 0;
-        ArrayList<String> perms = null;
-        ArrayList<DroneMove> flight = null;
         var curr = start.getId();
-        ArrayList<String> removed = new ArrayList<>();
+        ArrayList<String> greedyPerm = getGreedyPerm(curr);
+        ArrayList<String> visitedOrders = new ArrayList<>();
+        System.out.println("GREEDY PERMS: " +greedyPerm);
 
-        while (movesUsed > MOVES_ALLOWED || curr.equals(start.getId())) {
-            var localGraph  = shallowCopyOf(persistentGraph);
-            curr = start.getId();
-            perms = new ArrayList<>();
-
-            while (hasNextEdge(localGraph, curr)) { //keep doing if there are still edges to be visited
-                var nextEdge = greedyNextEdge(localGraph, curr); //get next edge
-                var next = localGraph.getEdgeTarget(nextEdge); //get next order
-                localGraph.removeVertex(curr); //pop order as it's been visited
-                curr = next;
-                perms.add(next);
+        Drone drone = new Drone(start.getCoordinates());
+        for (String s : greedyPerm) {
+            var ord = todaysOrders.get(s);
+            for (Stop stop : ord.getAllStops()) {
+                drone.flyToStop(stop);
+                drone.doHover();
             }
+            visitedOrders.add(s);
 
-            //make drone that flies route.
-            var allStopsMade = allStopsMade(perms);
-            var currentDrone = flightFromStopsMade(allStopsMade);
-            flight = currentDrone.getFlightPath();
-            movesUsed = currentDrone.getMovesUsed();
+            movesUsed = drone.getMovesUsed();
 
-            if (movesUsed > MOVES_ALLOWED) { //prepare for next loop by removing orders from consideration
-                System.out.println("CURRENT PERM: "+ perms);
-                System.out.println("CURRENT MOVES USED " + movesUsed);
-
-                //get order that is 'worst' from end location, remove from the graph that will be used in next loop.
-                var tempGraph  = shallowCopyOf(persistentGraph);
-                addEnd(tempGraph); //add edges to end location
-
-                var momentum = Math.ceil((movesUsed-MOVES_ALLOWED)/(double) 125); //how many to remove
-                for (int i = 0; i<momentum; i++) {
-                    removed.add(worstEndVert(tempGraph)); //get 'worst' and add to removed
-                }
-
-                persistentGraph.removeAllVertices(removed); //setup for next iteration by removing worst vertices
+            if (movesUsed >= MOVES_ALLOWED) {
+                break;
             }
         }
 
+        boolean canFlyHome = false;
 
-        System.out.println("FINAL " +perms.size()+ " PERMS " + perms);
+        if (MOVES_ALLOWED >= (drone.movesTo(end.getCoordinates())+movesUsed)) {
+            canFlyHome = true;
+        }
+
+        while (movesUsed > MOVES_ALLOWED || !canFlyHome) {
+            drone.rollbackOrder();
+            movesUsed = drone.getMovesUsed();
+            visitedOrders.remove(visitedOrders.size()-1);
+
+            canFlyHome = MOVES_ALLOWED >= (drone.movesTo(end.getCoordinates())+movesUsed);
+        }
+
+        drone.flyToStop(end);
+
+        System.out.println("FINAL " +visitedOrders.size()+ " PERMS " + visitedOrders);
         this.ordersCompleted = new ArrayList<>();
-        this.ordersCompleted.addAll(perms);
+        this.ordersCompleted.addAll(visitedOrders);
 
-        this.flightPath = flight;
+        this.flightPath = drone.getFlightPath();
 
-        this.profit = calcProfit(perms);
-        this.profitLost = calcProfitLost(removed);
+        this.profit = calcProfit(ordersCompleted);
+
+        greedyPerm.removeAll(ordersCompleted);
+
+        this.profitLost = calcProfitLost(greedyPerm);
         this.monetaryValue = calcMonetaryValue();
-        System.out.println("MOVES TAKEN: " + flight.size());
+        System.out.println("MOVES TAKEN: " + this.flightPath.size());
     }
+
+    private ArrayList<String> getGreedyPerm(String curr) {
+        ArrayList<String> ordering = new ArrayList<>();
+
+        var gg  = shallowCopyOf(originalGraph);
+
+        while (hasNextEdge(gg, curr)) {
+            var nextEdge = greedyNextEdge(gg, curr); //get next edge
+            var next = gg.getEdgeTarget(nextEdge); //get next order
+            gg.removeVertex(curr); //pop order as it's been visited
+            curr = next;
+            ordering.add(next);
+        }
+        return ordering;
+    }
+
 
     /**
      * Create a shallow copy of a graph by adding all of its vertices and edges to a new graph.

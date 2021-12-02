@@ -8,9 +8,10 @@ import java.util.*;
  */
 public class Drone {
 
-    private final ArrayList<DroneMove> flightPath;
+    private ArrayList<DroneMove> flightPath;
     private LongLat currentLocation;
     private String currentOrderNo;
+    private ArrayList<Integer> orderIndexes;
 
 
     /**
@@ -20,15 +21,20 @@ public class Drone {
     public Drone(LongLat initialLocation){
         this.currentLocation = initialLocation;
         this.flightPath = new ArrayList<>();
+        this.orderIndexes = new ArrayList<>();
+        this.currentOrderNo = "UNKNOWN";
     }
 
     /**
      * Set which order the drone is currently delivering.
      * This is required for accounting for the DroneMoves correctly.
-     * @param orderNo of the order being delivered.
+     * @param newOrderNo of the order being delivered.
      */
-    public void setCurrentOrder(String orderNo) {
-        this.currentOrderNo = orderNo;
+    public void setCurrentOrder(String newOrderNo) {
+        if (!currentOrderNo.equals(newOrderNo)) {
+            orderIndexes.add(flightPath.size());
+            this.currentOrderNo = newOrderNo;
+        }
     }
 
     /**
@@ -65,7 +71,7 @@ public class Drone {
      * Log the DroneMoves made in the flightpath and update current location.
      * @param dest to fly to.
      */
-    public void flyToLocation(LongLat dest) {
+    private void flyToLocation(LongLat dest) {
         if (currentLocation.closeTo(dest)) {
             doHover(); //if close to dest. then just hover for one move.
         } else {
@@ -139,5 +145,32 @@ public class Drone {
 
     public int getMovesUsed() {
         return this.flightPath.size();
+    }
+
+    public int movesTo(LongLat dest) {
+        int dist = 0;
+
+        if (currentLocation.closeTo(dest)) {
+            dist = 1;
+        } else {
+            var points = new Pathfinding().routeTo(currentLocation, dest);
+            dist = points.size()-1;
+        }
+        return dist;
+    }
+
+    public void rollbackOrder() {
+        int indx;
+        if (orderIndexes.size() <= 1) {
+            indx = 0;
+        } else {
+             indx = orderIndexes.get(orderIndexes.size() - 1);
+        }
+
+        flightPath = new ArrayList<>(flightPath.subList(0,indx));
+        orderIndexes.remove(orderIndexes.size()-1);
+        var latest = flightPath.get(flightPath.size()-1);
+        currentOrderNo = latest.getId();
+        currentLocation = latest.getTo();
     }
 }

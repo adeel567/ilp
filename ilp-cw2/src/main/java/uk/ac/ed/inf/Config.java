@@ -15,7 +15,8 @@ public class Config {
     /**
      * Uses singleton pattern, so private constructor.
      */
-    private Config(){}
+    private Config() {
+    }
 
     /**
      * Get the instance of Config.
