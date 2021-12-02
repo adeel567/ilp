@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Set;
 
 /**
- * Class for gathering and interacting with alll of the day's orders
+ * Class for gathering and interacting with all of the day's orders.
  */
 public class OrderHandler {
 

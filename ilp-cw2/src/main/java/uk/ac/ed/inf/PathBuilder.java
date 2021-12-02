@@ -126,27 +126,6 @@ public class PathBuilder implements PathBuilderInterface {
     }
 
     /**
-     * Add edges from all orders to end location.
-     * This is used when moves are over what is allowed, in order to find which node to drop.
-     *
-     * @param g directed weighted graph without End.
-     */
-    private void addEnd(SimpleDirectedWeightedGraph<String, tspEdge> g) {
-        g.addVertex(end.getId());
-        for (var x : g.vertexSet()) {
-            if (!(x.equals(end.getId()) || x.equals(start.getId()))) {
-                var ordX = todaysOrders.get(x);
-
-                var totalDist = ordX.getEstimatedDistance()
-                        + ordX.getDestinationCoords().tspHeuristic(end.getCoordinates());
-                var cost = (double) ordX.getDeliveryCost();
-
-                addEdge(g, x, end.getId(), totalDist, cost);
-            }
-        }
-    }
-
-    /**
      * Check if there are still orders to visit on graph.
      *
      * @param g    directed weighted graph.
@@ -170,36 +149,22 @@ public class PathBuilder implements PathBuilderInterface {
     }
 
     /**
-     * When moves are over what is allowed, we find the node with the 'worst' weight
-     * to the end location in order to remove it.
-     *
-     * @param g directed weighted graph with all orders and end node.
-     * @return orderNo of 'worst' order.
+     * Uses generated graph and the day's orders to fly drone.
+     * Greedy approach is taken on the graph, attempting to complete as many orders as possible and
+     * return home within the allowed moves.
      */
-    private String worstEndVert(SimpleDirectedWeightedGraph<String, tspEdge> g) {
-        var x = g.getEdgeSource(Collections.max(g.incomingEdgesOf(end.getId())));
-        g.removeVertex(x);
-        System.out.println("REMOVED: " + x);
-        return x;
-    }
-
     @Override
     public void doTour() {
         var movesUsed = 0;
-        var curr = start.getId();
-        ArrayList<String> greedyPerm = getGreedyPerm(curr); //get permutation of orders.
+        ArrayList<String> greedyPerm = getGreedyPerm(start.getId(), originalGraph); //get permutation of orders.
         ArrayList<String> visitedOrders = new ArrayList<>();
         System.out.println("GREEDY PERMS: " + greedyPerm);
 
         Drone drone = new Drone(start.getCoordinates());
         for (String orderNo : greedyPerm) {
             var ord = todaysOrders.get(orderNo);
-            for (Stop stop : ord.getAllStops()) {
-                drone.flyToStop(stop);
-                drone.doHover();
-            }
+            flyThroughOrder(drone, ord);
             visitedOrders.add(orderNo);
-
             movesUsed = drone.getMovesUsed();
 
             if (movesUsed >= MOVES_ALLOWED) {
@@ -211,15 +176,15 @@ public class PathBuilder implements PathBuilderInterface {
 
         while (movesUsed > MOVES_ALLOWED || !canFlyHome) {
             drone.rollbackOrder(); //undo latest order
-            movesUsed = drone.getMovesUsed();
             visitedOrders.remove(visitedOrders.size() - 1);
+            movesUsed = drone.getMovesUsed();
 
             canFlyHome = MOVES_ALLOWED >= (drone.movesTo(end.getCoordinates()) + movesUsed);
         }
 
         drone.flyToStop(end);
 
-        //diagnostic information and set values
+        //diagnostic information and setting of values
         System.out.println("FINAL " + visitedOrders.size() + " PERMS " + visitedOrders);
         this.ordersCompleted = visitedOrders;
         this.flightPath = drone.getFlightPath();
@@ -230,16 +195,35 @@ public class PathBuilder implements PathBuilderInterface {
         System.out.println("MOVES TAKEN: " + this.flightPath.size());
     }
 
-    private ArrayList<String> getGreedyPerm(String curr) {
+    /**
+     * Takes an order and flies the drone from its current location over the order until the order's destination.
+     * Includes the hover moves for the order.
+     * @param drone that will be flown.
+     * @param order to complete flight of.
+     */
+    private void flyThroughOrder(Drone drone, Order order) {
+        for (Stop stop : order.getAllStops()) {
+            drone.flyToStop(stop);
+            drone.doHover();
+        }
+    }
+
+    /**
+     * Uses graph to get a permutation of orders by taking the least cost edge from a start position.
+     * @param start the node to start the permutation from.
+     * @param g graph to run Greedy on.
+     * @return ArrayList of orders, arranged 'optimally'.
+     */
+    private ArrayList<String> getGreedyPerm(String start, SimpleDirectedWeightedGraph<String,tspEdge> g) {
         ArrayList<String> ordering = new ArrayList<>();
 
-        var gg = shallowCopyOf(originalGraph);
+        var localGraph = shallowCopyOf(g);
 
-        while (hasNextEdge(gg, curr)) {
-            var nextEdge = greedyNextEdge(gg, curr); //get next edge
-            var next = gg.getEdgeTarget(nextEdge); //get next order
-            gg.removeVertex(curr); //pop order as it's been visited
-            curr = next;
+        while (hasNextEdge(localGraph, start)) {
+            var nextEdge = greedyNextEdge(localGraph, start); //get next edge
+            var next = localGraph.getEdgeTarget(nextEdge); //get next order
+            localGraph.removeVertex(start); //pop order as it's been visited
+            start = next;
             ordering.add(next);
         }
         return ordering;
@@ -249,7 +233,6 @@ public class PathBuilder implements PathBuilderInterface {
     /**
      * Create a shallow copy of a graph by adding all of its vertices and edges to a new graph.
      * This is so vertices can be 'popped' and the graph reset after without a full rebuild.
-     *
      * @param g graph to copy from.
      * @return a shallow copy of the given graph.
      */
@@ -261,7 +244,6 @@ public class PathBuilder implements PathBuilderInterface {
 
     /**
      * Calculate the amount of money made from the orders delivered.
-     *
      * @param perms orderNos being delivered.
      * @return amount of money.
      */
@@ -279,7 +261,6 @@ public class PathBuilder implements PathBuilderInterface {
 
     /**
      * Calculate how much money has been lost from undeliverable orders.
-     *
      * @param removed which orderNos will not be delivered.
      * @return amount of money lost.
      */
@@ -292,6 +273,10 @@ public class PathBuilder implements PathBuilderInterface {
         return lost;
     }
 
+    /**
+     * Calculates the monetary value of the orders completed.
+     * @return double from 0-1 of monetary value.
+     */
     private double calcMonetaryValue() {
         var m = (profit / (double) (profit + profitLost));
         System.out.printf("MONETARY VALUE: %.2f%n", m);
@@ -299,46 +284,8 @@ public class PathBuilder implements PathBuilderInterface {
     }
 
     /**
-     * Build a drone and its route from the stops to be made on a day's orders.
-     * Will terminate early if moves are over what is allowed, so it may not visit all stops.
-     *
-     * @param allStops stops to be made.
-     * @return a Drone object with a completed flightpath.
-     */
-    private Drone flightFromStopsMade(ArrayList<Stop> allStops) {
-        var drone = new Drone(allStops.get(0).getCoordinates());
-
-        for (int i = 1, allStopsSize = allStops.size() - 1; i < allStopsSize; i++) {
-            Stop stop = allStops.get(i);
-
-            drone.flyToStop(stop);
-            drone.doHover();
-        }
-        drone.flyToStop(allStops.get(allStops.size() - 1)); //fly home
-        return drone;
-    }
-
-    /**
-     * Get all the stops to be made on a day's orders
-     *
-     * @param perms orderNos of deliveries to be made.
-     * @return all stops to be made to complete orders.
-     */
-    private ArrayList<Stop> allStopsMade(ArrayList<String> perms) {
-        var test = new ArrayList<Stop>();
-
-        test.add(start); //calculate all stops made
-        for (var job : perms) {
-            test.addAll(this.todaysOrders.get(job).getAllStops());
-        }
-        test.add(end);
-        return test;
-    }
-
-    /**
      * Get which Orders will be delivered today.
-     *
-     * @return all the Order objects from orderNos that will be delivered.
+     * @return all the Order objects from orderNos that have been delivered by drone.
      */
     @Override
     public ArrayList<Order> getOrdersDelivered() {

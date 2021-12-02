@@ -15,13 +15,13 @@ public class Drone {
     /** Store the initial location of the Drone when it was launched. */
     private final LongLat initialLocation;
 
-    /** Current location of drone as a LongLAt */
+    /** Current location of drone as a LongLat */
     private LongLat currentLocation;
 
     /** Current order number the drone is considering */
     private String currentOrderNo;
 
-    /** Points to the beginning of each new order. Used for rolling back*/
+    /** Points to the beginning of each new order. Used for rolling back */
     private final ArrayList<Integer> orderIndexes;
 
 

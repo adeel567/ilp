@@ -17,7 +17,6 @@ public class Stop {
 
     /**
      * Create a new stop from its associated order, location and stop name
-     *
      * @param id          a friendly identifier for the stop, such as a shop name
      * @param coordinates the coordinates of the stop, in LongLat format
      * @param orderNo     the order associated with this stop
