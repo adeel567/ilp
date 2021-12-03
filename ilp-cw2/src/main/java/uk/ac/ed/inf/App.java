@@ -7,9 +7,10 @@ public class App {
 
     /**
      * Runs the entire program by taking in arguments
+     *
      * @param args arguments as specified: day, month, year, web_port, db_port
      */
-    public static void main(String[] args){
+    public static void main(String[] args) {
         //parse args
         int day = Integer.parseInt(args[0]);
         int month = Integer.parseInt(args[1]);
@@ -25,7 +26,7 @@ public class App {
         config.setServerPort(web_port);
 
         //get all the orders
-        OrderHandler orderHandler = new OrderHandler(day,month,year);
+        OrderHandler orderHandler = new OrderHandler(day, month, year);
         orderHandler.fetchOrders();
 
         //build path
@@ -37,8 +38,6 @@ public class App {
         FileIO.writeGEOJson(pathBuilder.getFlightPath(), orderHandler.getDate());
         DatabaseIO.writeDeliveriesTable(pathBuilder.getOrdersDelivered());
         DatabaseIO.writeFilepathDatabase(pathBuilder.getFlightPath());
-
-
 
 
     }

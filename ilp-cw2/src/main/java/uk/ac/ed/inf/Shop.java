@@ -5,12 +5,43 @@ package uk.ac.ed.inf;
  * Required for parsing JSON.
  */
 public class Shop {
-    String name;
-    String location;
+    /** Name of Shop */
+    private String name;
 
-    Menu[] menu;
+    /** Location of shop as What3Words */
+    private String location;
+
+    /** Array of all the items on the shop's menu */
+    private Menu[] menu;
+
+    public String getName() {
+        return name;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public Menu[] getMenu() {
+        return menu;
+    }
+
+    /**
+     * Parsing the menu items for each parsed shop from JSON.
+     */
     public static class Menu {
-        String item;
-        int pence;
+        /** Name of item */
+        private String item;
+
+        /** Price in pence of item */
+        private int pence;
+
+        public String getItem() {
+            return item;
+        }
+
+        public int getPence() {
+            return pence;
+        }
     }
 }

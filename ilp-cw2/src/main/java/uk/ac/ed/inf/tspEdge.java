@@ -5,22 +5,21 @@ package uk.ac.ed.inf;
  */
 public class tspEdge implements Comparable<tspEdge> {
 
-    private double weight;
+    /** Weight of this edge */
+    private final double weight;
 
+    /**
+     * Initialise a new edge by setting its weight.
+     *
+     * @param weight of the edge.
+     */
     public tspEdge(double weight) {
-        this.weight = weight;
-    }
-
-    public double getWeight() {
-        return weight;
-    }
-
-    public void setWeight(double weight) {
         this.weight = weight;
     }
 
     /**
      * Compare two edges on their weight
+     *
      * @param o other edge to compare against
      * @return comparison of the weights
      */

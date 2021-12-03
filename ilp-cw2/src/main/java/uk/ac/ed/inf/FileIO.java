@@ -12,23 +12,26 @@ import java.util.ArrayList;
  */
 public class FileIO {
 
-    //prefix of file as a constant
+    /** Prefix of the file to write */
     private static final String FILE_PREFIX = "drone";
+
+    /** Suffix of the file to write */
     private static final String FILE_SUFFIX = "geojson";
 
     /**
      * Writes a flightpath to a GEOJson file.
-     * @param dms a flightpath in collection of DroneMove format.
+     *
+     * @param dms  a flightpath in collection of DroneMove format.
      * @param date the day the orders were for.
      */
-    public static void writeGEOJson(ArrayList<DroneMove> dms, LocalDate date){
+    public static void writeGEOJson(ArrayList<DroneMove> dms, LocalDate date) {
         var out = DroneMove.getMovesAsFC(dms);
 
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-        Writer fileWriter = null;
+        Writer fileWriter;
         try {
-            fileWriter = new FileWriter(String.format("%s-%s.%s", FILE_PREFIX,date.format(dtf),FILE_SUFFIX),
+            fileWriter = new FileWriter(String.format("%s-%s.%s", FILE_PREFIX, date.format(dtf), FILE_SUFFIX),
                     false);
             fileWriter.write(out.toJson());
 

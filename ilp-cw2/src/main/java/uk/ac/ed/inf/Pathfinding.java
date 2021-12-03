@@ -1,13 +1,16 @@
 package uk.ac.ed.inf;
 
 import java.util.*;
-import java.util.List;
 
 /**
  * Class for calculating the optimal route between two points.
  */
 public class Pathfinding implements PathfindingInterface {
+
+    /** Scale of the increments pathfinding makes. Set lower for precision, but worse performance */
     private static final int PATHFINDING_ANGLE_INCREMENT = 30;
+
+    /** Instance of No-Fly zones to check intersection */
     private static final NoFlyZones myNoFlyZones = NoFlyZones.getInstance();
 
     /**
@@ -81,6 +84,7 @@ public class Pathfinding implements PathfindingInterface {
      * Internally uses the A star algorithm.
      * Note: the start and end should be checked that they are not 'close'.
      * otherwise a Hover move is all that is needed.
+     *
      * @param startLL location to start at
      * @param endLL   location to end 'close-to'
      * @return a collection of Pathfinding nodes.
@@ -104,5 +108,5 @@ public class Pathfinding implements PathfindingInterface {
         Collections.reverse(path);
 
         return path;
-        }
+    }
 }
