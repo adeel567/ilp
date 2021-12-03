@@ -431,18 +431,18 @@ public class AppTest {
 //
 //    }
 //
-//    @Test
-//    public void testTSP4() {
-//        var x = new OrderHandler(25,12,2023);
-//        x.fetchOrders();
-//        var y = new PathBuilder(x);
-//        y.buildGraph();
-//        y.doTour();
-//        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
-//        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
-//        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
-//
-//    }
+    @Test
+    public void testTSP4() {
+        var x = new OrderHandler(25,12,2023);
+        x.fetchOrders();
+        var y = new PathBuilder(x);
+        y.buildGraph();
+        y.doTour();
+        FileIO.writeGEOJson(y.getFlightPath(),x.getDate());
+        DatabaseIO.writeDeliveriesTable(y.getOrdersDelivered());
+        DatabaseIO.writeFilepathDatabase(y.getFlightPath());
+
+    }
 //
 //
 //    @Test
