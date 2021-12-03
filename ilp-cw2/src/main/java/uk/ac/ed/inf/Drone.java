@@ -24,6 +24,8 @@ public class Drone {
     /** Points to the beginning of each new order. Used for rolling back */
     private final ArrayList<Integer> orderIndexes;
 
+    /** Constant for the order number when a move is made and it's not part of an order */
+    private static final String UNKNOWN_ORDER = "UNKNOWN";
 
     /**
      * Create a drone by providing an initial location in LongLat form.
@@ -35,7 +37,7 @@ public class Drone {
         this.currentLocation = initialLocation;
         this.flightPath = new ArrayList<>();
         this.orderIndexes = new ArrayList<>();
-        this.currentOrderNo = "UNKNOWN";
+        this.currentOrderNo = UNKNOWN_ORDER;
     }
 
     /**
@@ -56,7 +58,7 @@ public class Drone {
      * Log the move in the flightpath.
      */
     public void doHover() {
-        if (currentOrderNo.equals("UNKNOWN")) {
+        if (currentOrderNo.equals(UNKNOWN_ORDER)) {
             System.err.println("HOVERING WITH NO ORDER");
         }
 
@@ -149,7 +151,7 @@ public class Drone {
             dist = 1;
         } else {
             var points = new Pathfinding().routeTo(currentLocation, dest);
-            dist = points.size() - 1;
+            dist = points.size() - 1; //-1 needed as a line requires at least two points to start with
         }
         return dist;
     }
@@ -171,7 +173,7 @@ public class Drone {
 
         DroneMove latest;
         if (flightPath.size() == 0) { //if rolling back from the first order, then reset to initial state.
-            currentOrderNo = "UNKNOWN";
+            currentOrderNo = UNKNOWN_ORDER;
             currentLocation = initialLocation;
         } else {
             latest = flightPath.get(flightPath.size() - 1);
